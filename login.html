@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>Streamio - Login</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  </head>
+
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <main>
+    <!--Navbar-->
+    <nav class="navbar fixed-top bg-body-tertiary">
+      <div class="container-fluid">
+          <a class="navbar-brand" href="profile.html">Streamio</a>
+          <form class="d-flex" role="search">
+              <input class="form-control me-2 search-input" type="search" placeholder="Search" aria-label="Search"/>
+              <button class="btn custom-button" type="submit">Search</button>
+          </form>
+          <a href="signup.html" class="btn custom-button">Sign Up</a>
+      </div>
+    </nav>
+
+    <div class="auth-container">
+      <div class="auth-card">
+        <h2 class="auth-title">Welcome Back</h2>
+        <p class="auth-subtitle">Log in to your Streamio account</p>
+        
+        <form class="auth-form" id="loginForm">
+          <div class="form-group">
+            <label for="email">Email or Username</label>
+            <input type="text" id="email" name="email" class="form-input" placeholder="Enter your email or username" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
+          </div>
+          
+          <div class="form-options">
+            <label class="checkbox-container">
+              <input type="checkbox" id="remember" name="remember">
+              <span class="checkmark"></span>
+              Remember me
+            </label>
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </div>
+          
+          <button type="submit" class="auth-button">Log In</button>
+        </form>
+        
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+        
+        <div class="social-login">
+          <button class="social-button google-btn">
+            <span>Continue with Google</span>
+          </button>
+          <button class="social-button twitter-btn">
+            <span>Continue with Twitter</span>
+          </button>
+        </div>
+        
+        <p class="auth-switch">
+          Don't have an account? <a href="signup.html">Sign up</a>
+        </p>
+      </div>
+    </div>
+
+    </main>
+    <script src="auth.js"></script>
+  </body>
+</html>
