@@ -16,10 +16,12 @@
     margin-top: 10px;
 }
 
-/* Add padding for fixed navbar */
+body {
+    background-color: #302f2f;
+}
+
 main {
     padding-top: 80px;
-    padding-bottom: 20px;
     background-color: #302f2f;
 }
 
@@ -152,48 +154,46 @@ nav {
 }
 
 
-
-
-ul {
-    list-style-type: none;
-    width: 400px;
-    margin: 30px auto 0 auto;
-    padding: 0;
-    overflow: hidden;
-    background-color: #696969;
-    display: flex;
-}
-
-ul li {
-    flex: 1;
+.name {
     color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
 }
 
-ul li:hover {
-    background-color: #525151;
+hr {
+    color: white;
+    width: 50%;
+    margin: 0 auto;
 }
 
-/* Selected state styling */
-ul li.selected {
-    
-    font-weight: bold;
-    position: relative;
+/*biography*/
+.biography-section {
+    width: 70%;
+    margin: 0 auto;
+    margin-top: 30px;
 }
 
-ul li.selected::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 3px;
-    background-color: #afd5eb;
+.biography-section hr {
+    width: 100%;
+    margin: 10px 0;
+    border-color: #ffffff;
+}
+
+.biography-section p {
+    margin: 0;
+    padding: 0 20px;
+}
+
+/*dropdown menu*/
+.dropdown-menu {
+    background-color: #1a1919;
+    border: 1px solid #444;
+}
+
+.dropdown-item {
+    color: #ffffff;
+}
+
+.dropdown-item:hover {
+    background-color: #7f99aa;
 }
 
 /* Content display area */
@@ -219,9 +219,8 @@ ul li.selected::after {
     color: #333;
 }
 
-.name {
-    color: white;
-}
+
+
 
 /* Authentication Pages Styles */
 .auth-container {
