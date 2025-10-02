@@ -85,21 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Social login handlers
-    const googleBtns = document.querySelectorAll('.google-btn');
-    const twitterBtns = document.querySelectorAll('.twitter-btn');
-    
-    googleBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            alert('Google authentication would be implemented here.');
-        });
-    });
-    
-    twitterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            alert('Twitter authentication would be implemented here.');
-        });
-    });
 });
 
 // Form validation helpers
