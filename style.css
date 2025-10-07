@@ -29,6 +29,18 @@ nav {
     background-color: #1a1919;
 }
 
+a {
+    text-decoration: none;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active {
+  text-decoration: none;
+  color: black;
+}
+
 .custom-button {
     background-color: #afd5eb;
 }
