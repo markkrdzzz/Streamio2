@@ -499,6 +499,43 @@ hr {
   background-color: #94cbd7;
 }
 
+/* Events */
+.event-card {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #dee2e6; 
+    padding-bottom: 15px;
+}
+.events-list .col-12:last-child .event-card {
+    border-bottom: none;
+}
+.event-card .card-body {
+    padding: 1rem 0;
+}
+
+.section-heading {
+    color: #ffffff; 
+    font-weight: 600;
+}
+
+/* Upcoming Events color */
+h1 {
+    color: white;
+    font-weight: 600;
+}
+
+/* Create Events button */
+.custom-button {
+    background-color: #c8ddf0;
+    color: black;
+    border: none;
+}
+
+.custom-button:hover {
+    background-color: #b5d0e8;
+    color: black;
+}
+
+
 /* Authentication Pages Styles */
 .auth-container {
     display: flex;
