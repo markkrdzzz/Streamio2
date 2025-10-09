@@ -26,7 +26,7 @@ main {
 }
 
 nav {
-    background-color: #1a1919;
+    background-color: #1a1919 !important;
 }
 
 a {
@@ -42,11 +42,11 @@ a:active {
 }
 
 .custom-button {
-    background-color: #afd5eb;
+    background-color: #afd5eb !important;
 }
 
 .custom-button:hover {
-    background-color: #7f99aa;
+    background-color: #7f99aa !important;
 }
 
 
@@ -526,7 +526,7 @@ h1 {
 /* Create Events button */
 .custom-button {
     background-color: #c8ddf0;
-    color: black;
+    color: black !important;
     border: none;
 }
 
@@ -794,3 +794,5 @@ h1 {
         font-size: 1.5rem;
     }
 }
+
+/* Live styling */

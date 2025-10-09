@@ -13,18 +13,32 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
       font-family: Arial, sans-serif;
       background-color: #1c1c1c;
       color: white;
-      padding-top: 75px;
+    }
+
+    body {
+      padding-top: 60px; /* Height of your navbar */
     }
 
     /* Navbar custom tweaks */
     .navbar {
-      background-color: #333 !important;
+      background-color: #1a1919 !important;
+      min-height: 60px; 
+      padding: 0;
     }
+
+    .navbar .container-fluid {
+      padding: 0 16px; 
+      min-height: 60px; 
+    }
+
 
     .search-bar input {
       border-radius: 15px;
@@ -41,7 +55,8 @@
     .content-wrapper {
       display: grid;
       grid-template-columns: 220px 1fr 300px;
-      height: calc(100vh - 56px); /* subtract navbar */
+      height: calc(100vh - 60px); /* subtract navbar */
+      overflow: hidden;
     }
 
     /* Sidebar */
@@ -49,6 +64,7 @@
       background: #444;
       padding: 10px;
       overflow-y: auto;
+      height: 100%;
     }
 
     .sidebar h3 {
@@ -61,7 +77,7 @@
       margin: 10px 0;
     }
 
-    .sidebar .stream-item .icon {
+    .sidebar .stream-item .icon img{
       width: 30px;
       height: 30px;
       background: black;
@@ -76,6 +92,8 @@
       flex-direction: column;
       align-items: center;
       padding: 20px;
+      overflow-y: auto;
+      height: 100%;
     }
 
     .live-video {
@@ -112,6 +130,8 @@
       display: flex;
       flex-direction: column;
       padding: 10px;
+      height: 100%;
+      overflow: hidden;
     }
 
     .chat h3 {
@@ -125,6 +145,7 @@
       color: black;
       padding: 10px;
       margin-bottom: 10px;
+      min-height: 0;
     }
 
     .message {
@@ -159,16 +180,16 @@
   <!-- Main Layout -->
   <div class="content-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" style="padding-top:20px">
       <h3>Streaming Now</h3>
       <div class="stream-item">
-        <div class="icon"></div>
-        <div>UTRGV EECE<br><small>Projects</small></div>
+        <div class="icon"><a href="profile.html"><img src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg" width=""></a></div>
+        <div><a href="profile.html" style="color:white">UTRGV EECE</a><br><small>Projects</small></div>
       </div>
-      <div class="stream-item"><div class="icon"></div><div>Title<br><small>Name</small></div></div>
-      <div class="stream-item"><div class="icon"></div><div>Title<br><small>Name</small></div></div>
-      <div class="stream-item"><div class="icon"></div><div>Title<br><small>Name</small></div></div>
-      <div class="stream-item"><div class="icon"></div><div>Title<br><small>Name</small></div></div>
+      <div class="stream-item"><div class="icon"><img src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg" width=""></div><div><a href="profile.html" style="color:white">Name</a><br><small>Title</small></div></div>
+      <div class="stream-item"><div class="icon"><img src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg" width=""></div><div><a href="profile.html" style="color:white">Name</a><br><small>Title</small></div></div>
+      <div class="stream-item"><div class="icon"><img src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg" width=""></div><div><a href="profile.html" style="color:white">Name</a><br><small>Title</small></div></div>
+      <div class="stream-item"><div class="icon"><img src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg" width=""></div><div><a href="profile.html" style="color:white">Name</a><br><small>Title</small></div></div>
     </aside>
 
     <!-- Main content -->
@@ -177,20 +198,28 @@
         <iframe src="https://www.youtube.com/embed/jNQXAC9IVRw" allowfullscreen></iframe>
       </div>
       <div class="stream-info">
-        <h2>Hackathon</h2>
-        <p>UTRGV CSCI</p>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <a href="profile.html">
+          <img src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg"  
+              style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+              </a>
+          <div>
+            <h2 style="margin: 0;">Hackathon</h2>
+            <p style="margin: 0;"><a href="profile.html">UTRGV CSCI</a></p>
+          </div>
+        </div>
         <hr>
         <p><strong>Description</strong><br>Join us in our hackathon</p>
       </div>
     </main>
 
     <!-- Chat -->
-    <section class="chat">
-      <h3>Live Chat</h3>
+    <section class="chat" style="padding-top:20px">
+      <h3 style="text-align: center">Live Chat</h3>
       <div class="messages" id="chatMessages"></div>
       <div class="chat-input">
         <input type="text" id="messageInput" class="form-control" placeholder="Type a message...">
-        <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+        <button class="btn btn-primary custom-button" onclick="sendMessage()">Send</button>
       </div>
     </section>
   </div>
