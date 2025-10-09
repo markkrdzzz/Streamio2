@@ -201,7 +201,7 @@ hr {
 }
 
 .dropdown-item {
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 .dropdown-item:hover {
