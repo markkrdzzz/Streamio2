@@ -12,7 +12,6 @@
 
   <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <main>
     <!--Navbar-->
     <nav class="navbar fixed-top bg-body-tertiary">
     <div class="container-fluid">
@@ -26,123 +25,225 @@
     </nav>
 
 
-    <div class="options-bar">
-        <a href="#" class="option-item">Live</a>
-        <a href="#" class="option-item">Clubs</a>
-        <a href="#" class="option-item">School</a>
-        <a href="#" class="option-item">People</a>
-    </div>
 
-        <button class="filter-button">
-                    <span class="icon">&#9776;</span> Filter
+    <main class="content-area">
+
+          <!--Dropdown Menu-->
+        <div class="dropdown">
+            <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="Menu-Icon.png" width="40">
+            </button>
+
+            <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="homepage.html">Home</a></li>
+            <li><a class="dropdown-item" href="live.html">Live</a></li>
+            <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+            <li><a class="dropdown-item" href="events.html">Events</a></li>
+            </ul>
+        </div>
+
+        <!--Options-->
+        <div class="options-filter-container">
+            <div class="options-bar">
+                <a href="#" class="option-item active" data-category="all">Live</a>
+                <a href="#" class="option-item" data-category="clubs">Clubs</a>
+                <a href="#" class="option-item" data-category="school">School</a>
+                <a href="#" class="option-item" data-category="people">People</a>
+            </div>
+            
+            <button class="filter-button" id="filterButton">
+                <span class="icon">&#9776;</span> Filter
+            </button>
+        </div>
+
+        <!--Filter-->
+       <div class="filter-options-dropdown" id="filterOptions">
+    
+            <div class="dropdown filter-chip-dropdown">
+
+                 <button class="btn btn-secondary dropdown-toggle filter-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Category <span class="caret"></span>
                 </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Events</a></li>
+                    <li><a class="dropdown-item" href="#">Sports</a></li>
+                    <li><a class="dropdown-item" href="#">Academics</a></li>
+                    <li><a class="dropdown-item" href="#">Gaming</a></li>
+                </ul>
 
-        <!-- Video Results Grid -->
-<div class="video-results">
-  
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">Hackathon</div>
-        <span class="video-filter-tag">CSCI</span>
-      </div>
-    </div>
-  </div>
+                 <button class="btn btn-secondary dropdown-toggle filter-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    School <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">UTRGV</a></li>
+                    <li><a class="dropdown-item" href="#">CSCI</a></li>
+                    <li><a class="dropdown-item" href="#">CMPE</a></li>
+                    <li><a class="dropdown-item" href="#">BSN</a></li>
+                </ul>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">Football Game</div>
-        <span class="video-filter-tag">UTRGV</span>
-      </div>
-    </div>
-  </div>
+                <button class="btn btn-secondary dropdown-toggle filter-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Location <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Edinburg</a></li>
+                    <li><a class="dropdown-item" href="#">Brownsville</a></li>
+                </ul>
+            </div>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">CSCI 3333 Final Review</div>
-        <span class="video-filter-tag">CSCI</span>
-      </div>
-    </div>
-  </div>
+            <button class="btn btn-primary mt-3 save-changes-btn">Save Changes</button>
+        </div>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">Game Dev Club Meeting</div>
-        <span class="video-filter-tag">GAMEDEV</span>
-      </div>
-    </div>
-  </div>
+        <!--Video Placeholders-->
+        <div class="video-results" id="videoResults">
+          
+            <div class="video-placeholder" data-category="school">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">Hackathon</div>
+                        <span class="video-filter-tag">CSCI</span>
+                    </div>
+                </div>
+            </div>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">Resume Review</div>
-        <span class="video-filter-tag">Frontera Devs</span>
-      </div>
-    </div>
-  </div>
+            <div class="video-placeholder" data-category="live">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">Football Game</div>
+                        <span class="video-filter-tag">UTRGV</span>
+                    </div>
+                </div>
+            </div>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">Guest Speaker</div>
-        <span class="video-filter-tag">UTRGV</span>
-      </div>
-    </div>
-  </div>
+            <div class="video-placeholder" data-category="school">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">CSCI 3333 Final Review</div>
+                        <span class="video-filter-tag">CSCI</span>
+                    </div>
+                </div>
+            </div>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">UTRGV Major Showcase</div>
-        <span class="video-filter-tag">UTRGV</span>
-      </div>
-    </div>
-  </div>
+            <div class="video-placeholder" data-category="clubs">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">Game Dev Club Meeting</div>
+                        <span class="video-filter-tag">GAMEDEV</span>
+                    </div>
+                </div>
+            </div>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">Basketball Runs</div>
-        <span class="video-filter-tag">UREC</span>
-      </div>
-    </div>
-  </div>
+            <div class="video-placeholder" data-category="people">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">Resume Review</div>
+                        <span class="video-filter-tag">Frontera Devs</span>
+                    </div>
+                </div>
+            </div>
 
-  <div class="video-placeholder">
-    <div class="thumbnail-block"></div>
-    <div class="video-info">
-      <div class="profile-pic"></div>
-      <div>
-        <div class="title-block">Code Review</div>
-        <span class="video-filter-tag">John Doe</span>
-      </div>
-    </div>
-  </div>
+            <div class="video-placeholder" data-category="live">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">Guest Speaker</div>
+                        <span class="video-filter-tag">UTRGV</span>
+                    </div>
+                </div>
+            </div>
 
-  <!-- Add more video-placeholder items as needed -->
+            <div class="video-placeholder" data-category="school">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">UTRGV Major Showcase</div>
+                        <span class="video-filter-tag">UTRGV</span>
+                    </div>
+                </div>
+            </div>
 
-</div>
-   
-    </div>
-    </div>     
+            <div class="video-placeholder" data-category="clubs">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">Basketball Runs</div>
+                        <span class="video-filter-tag">UREC</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-placeholder" data-category="people">
+                <div class="thumbnail-block"></div>
+                <div class="video-info">
+                    <div class="profile-pic"></div>
+                    <div>
+                        <div class="title-block">Code Review</div>
+                        <span class="video-filter-tag">John Doe</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get the references
+            const options = document.querySelectorAll('.option-item');
+            const videos = document.querySelectorAll('.video-placeholder');
+            const filterButton = document.getElementById('filterButton');
+            const filterOptions = document.getElementById('filterOptions');
+
+            // Shows the videos of the selected category
+            function filterVideos(category) {
+                videos.forEach(video => {
+                    const videoCategory = video.getAttribute('data-category');
+                    
+                    if (category === 'all' || videoCategory === category) {
+                        video.style.display = 'flex';
+                    } else {
+                        video.style.display = 'none';
+                    }
+                });
+            }
+            
+            options.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+
+                    // Gets the category selected
+                    const selectedCategory = e.target.getAttribute('data-category');     
+
+                    options.forEach(item => item.classList.remove('active'));
+                    e.target.classList.add('active'); 
+
+                    // Filter videos depemding on category selected
+                    filterVideos(selectedCategory);
+                    filterOptions.classList.remove('active');
+                });
+            });
+
+            // Gets the category initially active
+            const initialCategory = document.querySelector('.option-item.active').getAttribute('data-category');
+            filterVideos(initialCategory); 
+
+            // Filter button dropdown filter menu
+            filterButton.addEventListener('click', () => {
+                filterOptions.classList.toggle('active');
+            });
+            
+        });
+    </script>
+  </body>     
 </html>
