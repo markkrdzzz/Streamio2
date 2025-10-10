@@ -36,7 +36,7 @@
 
             <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="homepage.html">Home</a></li>
-            <li><a class="dropdown-item" href="live.html">Live</a></li>
+            <!-- <li><a class="dropdown-item" href="live.html">Live</a></li> -->
             <li><a class="dropdown-item" href="profile.html">Profile</a></li>
             <li><a class="dropdown-item" href="events.html">Events</a></li>
             </ul>
@@ -204,6 +204,16 @@
             const videos = document.querySelectorAll('.video-placeholder');
             const filterButton = document.getElementById('filterButton');
             const filterOptions = document.getElementById('filterOptions');
+
+            // ADD: Click event for video placeholders to go to live page
+            videos.forEach(video => {
+                video.addEventListener('click', () => {
+                    window.location.href = 'live.html';
+                });
+                
+                // Add cursor pointer style
+                video.style.cursor = 'pointer';
+            });
 
             // Shows the videos of the selected category
             function filterVideos(category) {
