@@ -166,6 +166,8 @@ a:active {
 }
 
 
+
+
 .name {
     color: white;
 }
@@ -194,19 +196,7 @@ hr {
     padding: 0 20px;
 }
 
-/*dropdown menu*/
-.dropdown-menu {
-    background-color: #1a1919;
-    border: 1px solid #444;
-}
 
-.dropdown-item {
-    color: #ffffff !important;
-}
-
-.dropdown-item:hover {
-    background-color: #7f99aa;
-}
 
 /* Content display area */
 .content-display {
@@ -245,9 +235,9 @@ hr {
 
 .option-item {
     text-decoration: none;
-    color: #f9f7f7;
+    color: #f9f7f7 !important;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: normal;
     padding: 5px 0; 
     background-color: transparent;
@@ -256,18 +246,18 @@ hr {
 }
 
 .option-item:hover {
-    color: #007bff;
+    color: #afd5eb;
     background-color: transparent;
 }
 
 .option-item.active {
-    color: #007bff;
+    color: #afd5eb;
     font-weight: normal;
-    border-bottom: 2px solid #007bff;
+    border-bottom: 2px solid #afd5eb;
 }
 
 .filter-button {
-    background-color: #f0f0f0;
+    background-color: #afd5eb;
     color: #333;
     border: none;
     padding: 8px 12px;
@@ -792,6 +782,84 @@ h1 {
     
     .auth-title {
         font-size: 1.5rem;
+    }
+}
+
+/* Events cards styling */
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.event-card {
+    background-color: #666666;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+    border: none;
+}
+
+.event-card .card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.event-card-title {
+    color: #afd5eb !important;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.event-card-subtitle {
+    color: white !important;
+    margin-bottom: 12px;
+}
+
+.event-card-location {
+    color: white;
+    margin-bottom: 8px;
+}
+
+.event-card-description {
+    color: white;
+    font-style: italic;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 5px;
+}
+
+.event-card-description::-webkit-scrollbar {
+    width: 6px;
+}
+
+.event-card-description::-webkit-scrollbar-track {
+    background: #555;
+    border-radius: 3px;
+}
+
+.event-card-description::-webkit-scrollbar-thumb {
+    background: #afd5eb;
+    border-radius: 3px;
+}
+
+.event-card-description::-webkit-scrollbar-thumb:hover {
+    background: #8bc4e0;
+}
+
+@media (max-width: 992px) {
+    .events-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .events-grid {
+        grid-template-columns: 1fr;
     }
 }
 

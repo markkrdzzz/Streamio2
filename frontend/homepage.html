@@ -28,19 +28,6 @@
 
     <main class="content-area">
 
-          <!--Dropdown Menu-->
-        <div class="dropdown">
-            <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="Menu-Icon.png" width="40">
-            </button>
-
-            <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="homepage.html">Home</a></li>
-            <!-- <li><a class="dropdown-item" href="live.html">Live</a></li> -->
-            <li><a class="dropdown-item" href="profile.html">Profile</a></li>
-            <li><a class="dropdown-item" href="events.html">Events</a></li>
-            </ul>
-        </div>
 
         <!--Options-->
         <div class="options-filter-container">
@@ -49,7 +36,14 @@
                 <a href="#" class="option-item" data-category="clubs">Clubs</a>
                 <a href="#" class="option-item" data-category="school">School</a>
                 <a href="#" class="option-item" data-category="people">People</a>
+                <a href="#" class="option-item" data-category="events">Events</a>
             </div>
+            <!--Create Club button and Upcoming Events title in line with the filter button-->
+            <button class="btn btn-primary custom-button" id="createClubBtn" style="display: none; position: absolute; left: 50%; transform: translateX(-50%);" data-bs-toggle="modal" data-bs-target="#createClubModal">
+                Create Club
+            </button>
+            
+            <h1 id="eventsTitle" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); margin: 0; font-size: 1.5rem;">Upcoming Events</h1>
             
             <button class="filter-button" id="filterButton">
                 <span class="icon">&#9776;</span> Filter
@@ -195,6 +189,157 @@
                 </div>
             </div>
         </div>
+
+        <!--Events-->
+        <div class="events-page" id="eventsPage" style="display: none;">
+            <div class="container mt-4">
+                
+                <div class="d-flex justify-content-center mb-4">
+                    <button 
+                        class="btn btn-primary custom-button" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#createEventModal"
+                    >
+                        Create Event
+                    </button>
+                </div>
+
+                <div id="events-list" class="events-grid">
+                    <div class="card event-card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="event-card-title">Poster Presentation</h5>
+                            <h6 class="event-card-subtitle">October 29, 2025 at 5:00 PM</h6>
+                            <p class="event-card-location">Edinburg Campus, EIEAB Building</p>
+                            <p class="event-card-description">Join us to view projects our seniors are doing.</p>
+                        </div>
+                    </div>
+
+                    <div class="card event-card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="event-card-title">UTRGV Graduation Ceremony</h5>
+                            <h6 class="event-card-subtitle">December 20, 2025 at 10:00 AM</h6>
+                            <p class="event-card-location">Edinburg, Bert Ogden Arena</p>
+                            <p class="event-card-description">Come join us in supporting our UTRGV Graduates.</p>
+                        </div>
+                    </div>
+
+                    <div class="card event-card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="event-card-title">Tech Workshop Series</h5>
+                            <h6 class="event-card-subtitle">November 15, 2025 at 2:00 PM</h6>
+                            <p class="event-card-location">Computer Science Building, Room 101</p>
+                            <p class="event-card-description">Join us for an intensive workshop covering modern web development technologies including React, Node.js, and cloud deployment. This hands-on session will guide you through building a full-stack application from scratch. Perfect for beginners and intermediate developers looking to expand their skillset. Bring your laptop and be ready to code! Refreshments will be provided. Limited seats available, so register early to secure your spot.</p>
+                        </div>
+                    </div>
+
+                    <div class="card event-card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="event-card-title">Career Fair 2025</h5>
+                            <h6 class="event-card-subtitle">January 10, 2026 at 9:00 AM</h6>
+                            <p class="event-card-location">University Center Ballroom</p>
+                            <p class="event-card-description">Network with top employers and explore career opportunities.</p>
+                        </div>
+                    </div>
+
+                </div>
+                
+            </div>
+            
+            <!--Create Event Form-->
+            <div class="modal fade" id="createEventModal" tabindex="-1" aria-labelledby="createEventModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content" style="background-color: #353434; color:white;">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createEventModalLabel">Create New Event</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <form id="event-creation-form">
+                                
+                                <div class="mb-3">
+                                    <label for="eventName" class="form-label">Event Name</label>
+                                    <input type="text" class="form-control" id="eventName" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="eventTime" class="form-label">Date and Time</label>
+                                    <input type="datetime-local" class="form-control" id="eventTime" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="eventLocation" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="eventLocation" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="eventDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="eventDescription" rows="3" required></textarea>
+                                </div>
+
+                            </form>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success custom-button" form="event-creation-form">Create Event</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Create Club Form-->
+        <div class="modal fade" id="createClubModal" tabindex="-1" aria-labelledby="createClubModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content" style="background-color: #353434; color:white;">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createClubModalLabel">Create New Club</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <form id="club-creation-form">
+                            
+                            <div class="mb-3">
+                                <label for="clubName" class="form-label">Club Name</label>
+                                <input type="text" class="form-control" id="clubName" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="clubCategory" class="form-label">Category</label>
+                                <select class="form-select" id="clubCategory" required>
+                                    <option value="">Select a category</option>
+                                    <option value="sports">Sports</option>
+                                    <option value="academics">Academics</option>
+                                    <option value="gaming">Gaming</option>
+                                    <option value="arts">Arts</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="clubDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="clubDescription" rows="3" required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="clubContact" class="form-label">Contact Email</label>
+                                <input type="email" class="form-control" id="clubContact" required>
+                            </div>
+
+                        </form>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success custom-button" form="club-creation-form">Create Club</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
     
     <script>
@@ -202,6 +347,10 @@
             // Get the references
             const options = document.querySelectorAll('.option-item');
             const videos = document.querySelectorAll('.video-placeholder');
+            const videoResults = document.getElementById('videoResults');
+            const eventsPage = document.getElementById('eventsPage');
+            const createClubBtn = document.getElementById('createClubBtn');
+            const eventsTitle = document.getElementById('eventsTitle');
             const filterButton = document.getElementById('filterButton');
             const filterOptions = document.getElementById('filterOptions');
 
@@ -215,17 +364,57 @@
                 video.style.cursor = 'pointer';
             });
 
-            // Shows the videos of the selected category
-            function filterVideos(category) {
-                videos.forEach(video => {
-                    const videoCategory = video.getAttribute('data-category');
+            // Shows the videos of the selected category OR shows events page
+            function filterContent(category) {
+                if (category === 'events') {
+                    // Hide videos, show events
+                    videoResults.style.display = 'none';
+                    eventsPage.style.display = 'block';
+                    createClubBtn.style.display = 'none';
+                    eventsTitle.style.display = 'block';
+                    filterButton.style.display = 'block';
+                    filterOptions.classList.remove('active');
+                } else if (category === 'clubs') {
+                    // Show videos, hide events, show create club button
+                    videoResults.style.display = 'grid';
+                    eventsPage.style.display = 'none';
+                    createClubBtn.style.display = 'block';
+                    eventsTitle.style.display = 'none';
+                    filterButton.style.display = 'none';
+                    filterOptions.classList.remove('active');
                     
-                    if (category === 'all' || videoCategory === category) {
+                    // Filter videos by category
+                    videos.forEach(video => {
+                        const videoCategory = video.getAttribute('data-category');
+                        video.style.display = (videoCategory === 'clubs') ? 'flex' : 'none';
+                    });
+                } else if (category === 'all') {
+                    // Show videos, hide events and create club button, show filter
+                    videoResults.style.display = 'grid';
+                    eventsPage.style.display = 'none';
+                    createClubBtn.style.display = 'none';
+                    eventsTitle.style.display = 'none';
+                    filterButton.style.display = 'block';
+                    
+                    // Show all videos
+                    videos.forEach(video => {
                         video.style.display = 'flex';
-                    } else {
-                        video.style.display = 'none';
-                    }
-                });
+                    });
+                } else {
+                    // Show videos, hide events and create club button, hide filter
+                    videoResults.style.display = 'grid';
+                    eventsPage.style.display = 'none';
+                    createClubBtn.style.display = 'none';
+                    eventsTitle.style.display = 'none';
+                    filterButton.style.display = 'none';
+                    filterOptions.classList.remove('active');
+                    
+                    // Filter videos by category
+                    videos.forEach(video => {
+                        const videoCategory = video.getAttribute('data-category');
+                        video.style.display = (videoCategory === category) ? 'flex' : 'none';
+                    });
+                }
             }
             
             options.forEach(option => {
@@ -238,15 +427,16 @@
                     options.forEach(item => item.classList.remove('active'));
                     e.target.classList.add('active'); 
 
-                    // Filter videos depemding on category selected
-                    filterVideos(selectedCategory);
-                    filterOptions.classList.remove('active');
+                    // Filter content depending on category selected
+                    filterContent(selectedCategory);
                 });
             });
 
-            // Gets the category initially active
+            // Gets the category initially active and ensure create club button is hidden initially
+            createClubBtn.style.display = 'none';
+            eventsTitle.style.display = 'none';
             const initialCategory = document.querySelector('.option-item.active').getAttribute('data-category');
-            filterVideos(initialCategory); 
+            filterContent(initialCategory); 
 
             // Filter button dropdown filter menu
             filterButton.addEventListener('click', () => {
