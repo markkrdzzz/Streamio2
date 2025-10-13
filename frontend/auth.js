@@ -7,21 +7,33 @@ const signupForm = document.getElementById("signupForm");
 if (signupForm) {
   signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
     const username = document.getElementById("username").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      alert("❌ Passwords do not match");
+      return;
+    }
+
+    const fullName = `${firstName} ${lastName}`;
 
     const res = await fetch(`${API_URL}/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, email, password, name: fullName }),
     });
 
     if (res.ok) {
       alert("✅ Account created successfully!");
       window.location.href = "login.html";
     } else {
-      alert("❌ Failed to create account");
+      const errorText = await res.text();
+      alert("❌ Failed to create account: " + errorText);
     }
   });
 }
@@ -44,9 +56,10 @@ if (loginForm) {
       const user = await res.json();
       localStorage.setItem("user", JSON.stringify(user));
       alert(`👋 Welcome back, ${user.username}!`);
-      window.location.href = "index.html"; // redirect to homepage
+      window.location.href = "homepage.html"; // redirect to homepage
     } else {
-      alert("❌ Invalid email or password");
+      const errorText = await res.text();
+      alert("❌ " + errorText);
     }
   });
 }
