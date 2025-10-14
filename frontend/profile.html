@@ -25,27 +25,46 @@
         </div>
       </nav>
 
-      
-      <!--Dropdown Menu-->
-      <div class="dropdown">
-        <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="Menu-Icon.png" width="40">
-        </button>
+       <!--Options-->
+        <div class="options-filter-container">
+            <div class="options-bar">
+                <a href="#" class="option-item active" data-category="about">About</a>
+                <a href="#" class="option-item" data-category="live">Live</a>
+                <a href="#" class="option-item" data-category="clubs">Clubs</a>
+                <a href="#" class="option-item" data-category="events">Events</a>
+            </div>
 
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="homepage.html">Home</a></li>
-          <!-- <li><a class="dropdown-item" href="live.html">Live</a></li> -->
-          <li><a class="dropdown-item" href="profile.html">Profile</a></li>
-          <li><a class="dropdown-item" href="events.html">Events</a></li>
-        </ul>
-      </div>
+            <!--Create Live button-->
+            <button class="btn btn-primary custom-button" id="createLiveBtn" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); " data-bs-toggle="modal" data-bs-target="#createLiveModal">
+                Create Live
+            </button>
 
+        </div>
 
+      <div id="aboutPage" class="about-page">
       <!--Profile picture-->
-      <div>
-        <img class="rounded-circle pfp" src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg" 
-        width="150" height="150" >
-        <p class="text-center fs-1 name">UTRGV CSCI</p>   <!--Name-->
+      <div class="pfp-container text-center mx-auto" style="width: 150px;"> 
+     
+     
+        <div>
+            <img class="rounded-circle pfp" src="https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg" 
+            width="150" height="150" id="profilePicture">
+            <p class="text-center fs-1 name">UTRGV</p>   <!--Name-->
+        </div>
+
+        <button
+            id="changePfpBtn"
+            class="btn btn-sm btn-secondary mt-2"
+            style="opacity: 0.85; width: auto;"
+          >
+            Change
+          </button>
+          <input
+            type="file"
+            id="pfpInput"
+            accept="image/*"
+            style="display: none;"
+          />
       </div>
 
       <!--Biography section-->
@@ -54,9 +73,169 @@
         <hr>
         <p class="text-center fs-5 name">Welcome! We are the University of Texas - Rio Grande Valley, College of Computer Science.</p>
       </div>
+      </div>
 
+      
 
+       <div id="livePage" class="live-page">
+         <div class="modal fade" id="createLiveModal" tabindex="-1" aria-labelledby="createLiveModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content" style="background-color: #353434; color:white;">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createLiveModalLabel">Start New Live Stream</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    
+                        <div class="modal-body">
+                            <form id="live-creation-form">
+                                
+                                <div class="mb-3">
+                                    <label for="liveTitle" class="form-label">Stream Title</label>
+                                    <input type="text" class="form-control" id="liveTitle" placeholder="" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="liveCategory" class="form-label">Category</label>
+                                    <select class="form-select" id="liveCategory" required>
+                                        <option value="">Select a category</option>
+                                        <option value="sports">Clubs</option>
+                                        <option value="academics">School</option>
+                                        <option value="gaming">People</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="liveDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="liveDescription" rows="3" placeholder="Tell viewers what your stream is about." required></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger custom-button" form="live-creation-form">Go Live</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                <!-- CLUBS PAGE -->
+        <div id="clubsPage" class="clubs-page text-center mt-4" style="display: none;">
+                <h3 style="color: white;">Your Clubs</h3>
+                <div id="clubsList" class="mt-3"></div>
+        </div>
+
+            <!-- EVENTS PAGE -->
+        <div id="eventsPage" class="events-page text-center mt-4" style="display: none;">
+            <h3 style="color:white;">Created Events</h3>
+            <div id="eventsList" class="mt-3"></div>
+        </div>
     </main>
     <script src="index.js"></script>
   </body>
 </html>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const options = document.querySelectorAll('.option-item');
+    const aboutPage = document.getElementById('aboutPage');
+    const livePage = document.getElementById('livePage');
+    const createLiveBtn = document.getElementById('createLiveBtn');
+    const clubsPage = document.getElementById('clubsPage');
+    const eventsPage = document.getElementById('eventsPage');
+
+    const pfp = document.getElementById('profilePicture');
+    const pfpInput = document.getElementById('pfpInput');
+    const changePfpBtn = document.getElementById('changePfpBtn');
+
+    const clubsList = document.getElementById('clubsList');
+    const eventsList = document.getElementById('eventsList');
+
+    const userClubs = ["UTRGV CSCI Undergrads", "Frontera Devs", "Coding Society"];
+    const userEvents = ["Career Fair 2025", "Poster Presentation"];
+        
+
+    // Profile picture change
+        changePfpBtn.addEventListener('click', () => pfpInput.click());
+        pfpInput.addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              pfp.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // Show the clubs user is in
+        function showClubs() {
+          clubsList.innerHTML = "";
+          if (userClubs.length === 0) {
+            clubsList.innerHTML = "<p>No clubs joined yet.</p>";
+          } else {
+            userClubs.forEach((club) => {
+              const div = document.createElement("div");
+              div.textContent = club;
+              div.classList.add("p-2", "border", "rounded", "mb-2", "bg-light");
+              clubsList.appendChild(div);
+            });
+          }
+        }
+
+        // Show the events user has created
+        function showEvents() {
+          eventsList.innerHTML = "";
+          if (userEvents.length === 0) {
+            eventsList.innerHTML = "<p>No events created yet.</p>";
+          } else {
+            userEvents.forEach((event) => {
+              const div = document.createElement("div");
+              div.textContent = event;
+              div.classList.add("p-2", "border", "rounded", "mb-2", "bg-light");
+              eventsList.appendChild(div);
+            });
+          }
+        }
+
+    function filterContent(category) {
+        // Hide all pages by default
+        aboutPage.style.display = 'none';
+        livePage.style.display = 'none';
+        createLiveBtn.style.display = 'none';
+        clubsPage.style.display = 'none';
+        eventsPage.style.display = 'none';
+
+        // Show selected page and handle button visibility
+        if (category === 'about') {
+            aboutPage.style.display = '';
+        } 
+        else if (category === 'live') {
+            livePage.style.display = '';
+            createLiveBtn.style.display = 'block';
+        } 
+        else if (category === 'clubs') {
+            clubsPage.style.display ='';
+            showClubs();
+        } 
+        else if (category === 'events') {
+            eventsPage.style.display = '';
+            showEvents();
+        }
+    }
+
+    options.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            const selectedCategory = e.target.getAttribute('data-category');     
+            options.forEach(item => item.classList.remove('active'));
+            e.target.classList.add('active'); 
+            filterContent(selectedCategory);
+        });
+    });
+
+    // Show the initial category (About by default)
+    const initialCategory = document.querySelector('.option-item.active').getAttribute('data-category');
+    filterContent(initialCategory); 
+});
+</script>
