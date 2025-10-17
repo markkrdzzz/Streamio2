@@ -7,17 +7,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔑 Supabase connection with API keys (much safer!)
+// Supabase connection with API keys (much safer!)
 const supabaseUrl = 'https://kqsfaqxlwdrxevvshpil.supabase.co';
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtxc2ZhcXhsd2RyeGV2dnNocGlsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDAyMzE1MSwiZXhwIjoyMDc1NTk5MTUxfQ.9gEgBNn4u4niCJu1ChcH7DTEXdNc7-UscNt4ATZf03k'; // Get this from Settings → API
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// ✅ Test route
+// Test route
 app.get("/", (req, res) => {
   res.send("Streamio backend connected to Supabase via API!");
 });
 
-// 🧑‍💻 SIGNUP route
+// SIGNUP route
 app.post("/signup", async (req, res) => {
   const { username, email, password, name } = req.body;
 
@@ -53,7 +53,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// 🔑 LOGIN route
+// LOGIN route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -90,6 +90,6 @@ app.post("/login", async (req, res) => {
 
 
 
-// �🚀 Start server
+// Start server
 const PORT = 4000;
 app.listen(PORT, () => console.log(`✅ Server running at http://localhost:${PORT}`));

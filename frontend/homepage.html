@@ -196,6 +196,7 @@
                 
                 <div class="d-flex justify-content-center mb-4">
                     <button 
+                        id="createEventBtn"
                         class="btn btn-primary custom-button" 
                         data-bs-toggle="modal" 
                         data-bs-target="#createEventModal"
@@ -350,7 +351,9 @@
             const videoResults = document.getElementById('videoResults');
             const eventsPage = document.getElementById('eventsPage');
             const createClubBtn = document.getElementById('createClubBtn');
+            const createEventBtn = document.getElementById('createEventBtn');
             const eventsTitle = document.getElementById('eventsTitle');
+            const isLoggedIn = !!localStorage.getItem('user');
             const filterButton = document.getElementById('filterButton');
             const filterOptions = document.getElementById('filterOptions');
 
@@ -370,7 +373,8 @@
                     // Hide videos, show events
                     videoResults.style.display = 'none';
                     eventsPage.style.display = 'block';
-                    createClubBtn.style.display = 'none';
+                    if (createClubBtn) createClubBtn.style.display = 'none';
+                    if (createEventBtn) createEventBtn.style.display = isLoggedIn ? 'block' : 'none';
                     eventsTitle.style.display = 'block';
                     filterButton.style.display = 'block';
                     filterOptions.classList.remove('active');
@@ -378,7 +382,7 @@
                     // Show videos, hide events, show create club button
                     videoResults.style.display = 'grid';
                     eventsPage.style.display = 'none';
-                    createClubBtn.style.display = 'block';
+                    if (createClubBtn) createClubBtn.style.display = isLoggedIn ? 'block' : 'none';
                     eventsTitle.style.display = 'none';
                     filterButton.style.display = 'none';
                     filterOptions.classList.remove('active');
@@ -392,7 +396,8 @@
                     // Show videos, hide events and create club button, show filter
                     videoResults.style.display = 'grid';
                     eventsPage.style.display = 'none';
-                    createClubBtn.style.display = 'none';
+                    if (createClubBtn) createClubBtn.style.display = 'none';
+                    if (createEventBtn) createEventBtn.style.display = 'none';
                     eventsTitle.style.display = 'none';
                     filterButton.style.display = 'block';
                     
@@ -404,7 +409,8 @@
                     // Show videos, hide events and create club button, hide filter
                     videoResults.style.display = 'grid';
                     eventsPage.style.display = 'none';
-                    createClubBtn.style.display = 'none';
+                    if (createClubBtn) createClubBtn.style.display = 'none';
+                    if (createEventBtn) createEventBtn.style.display = 'none';
                     eventsTitle.style.display = 'none';
                     filterButton.style.display = 'none';
                     filterOptions.classList.remove('active');
@@ -432,8 +438,9 @@
                 });
             });
 
-            // Gets the category initially active and ensure create club button is hidden initially
-            createClubBtn.style.display = 'none';
+            // initial visibility based on auth
+            if (createClubBtn) createClubBtn.style.display = isLoggedIn ? 'block' : 'none';
+            if (createEventBtn) createEventBtn.style.display = isLoggedIn ? 'block' : 'none';
             eventsTitle.style.display = 'none';
             const initialCategory = document.querySelector('.option-item.active').getAttribute('data-category');
             filterContent(initialCategory); 
