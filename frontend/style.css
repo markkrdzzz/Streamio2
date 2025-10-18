@@ -50,7 +50,7 @@ a:active {
 }
 
 
-/* Twitch-style top navbar */
+/* Top navbar */
 .navbar {
     background-color: #1a1919 !important;
     min-height: 60px;
@@ -99,6 +99,25 @@ a:active {
     flex: 0 0 auto;
     min-width: 100px;
     white-space: nowrap;
+}
+
+.navbar .dropdown {
+  position: static !important;
+}
+
+.navbar .dropdown-menu {
+  position: absolute !important;
+  top: 100% !important;
+  right: 0 !important;
+  margin-top: 0.5rem !important;
+}
+
+.navbar {
+  overflow: visible !important;
+}
+
+.navbar .container-fluid {
+  overflow: visible !important;
 }
 
 /* Responsive behavior like Twitch */
@@ -165,7 +184,10 @@ a:active {
     }
 }
 
-
+/*Dropdown menu*/
+.dropdown-menu {
+  background-color: #afd5eb !important;
+}
 
 
 .name {

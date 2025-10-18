@@ -70,7 +70,7 @@ function renderAuthAvatar() {
   if (!raw) return;
   let user;
   try { user = JSON.parse(raw); } catch (e) { localStorage.removeItem('user'); return; }
-
+  
   // find the login/signup element specifically so we don't match the search button
   let navAnchor = null;
   const loginAnchor = document.querySelector('a[href="login.html"], a[href="signup.html"]');
@@ -81,32 +81,65 @@ function renderAuthAvatar() {
     navAnchor = document.querySelector('.navbar .container-fluid > .btn.custom-button, .navbar .container-fluid > a.custom-button, .custom-button');
   }
   if (!navAnchor) return;
-
-  const wrapper = document.createElement('div');
-  wrapper.style.display = 'flex';
-  wrapper.style.alignItems = 'center';
-  wrapper.style.gap = '8px';
-
+  
+  // Create dropdown wrapper
+  const dropdown = document.createElement('div');
+  dropdown.className = 'dropdown';
+  
+  // Create profile image button
   const img = document.createElement('img');
-  img.src = user.avatar || (`https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || user.email || user.name || '')}&background=0D8ABC&color=fff&size=128`);
+  img.src = 'default_pfp.svg'
   img.alt = 'Profile';
   img.style.width = '40px';
   img.style.height = '40px';
   img.style.borderRadius = '50%';
   img.style.cursor = 'pointer';
-  img.addEventListener('click', () => window.location.href = 'profile.html');
-
-  const logoutBtn = document.createElement('button');
-  logoutBtn.className = 'btn btn-sm btn-outline-secondary';
-  logoutBtn.textContent = 'Logout';
-  logoutBtn.addEventListener('click', () => {
+  img.className = 'dropdown-toggle';
+  img.setAttribute('data-bs-toggle', 'dropdown');
+  img.setAttribute('aria-expanded', 'false');
+  
+  // Create dropdown menu
+  const menu = document.createElement('ul');
+  menu.className = 'dropdown-menu dropdown-menu-end';
+  menu.style.cssText = `
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    margin-top: 0.5rem !important;
+    background-color: #afd5eb !important;
+  `;
+  
+  // Profile link
+  const profileItem = document.createElement('li');
+  const profileLink = document.createElement('a');
+  profileLink.className = 'dropdown-item';
+  profileLink.href = 'profile.html';
+  profileLink.innerHTML = '<i class="bi bi-person"></i> Profile';
+  profileItem.appendChild(profileLink);
+  
+  
+  
+  // Logout link
+  const logoutItem = document.createElement('li');
+  const logoutLink = document.createElement('a');
+  logoutLink.className = 'dropdown-item';
+  logoutLink.href = '#';
+  logoutLink.innerHTML = '<i class="bi bi-box-arrow-right"></i> Logout';
+  logoutLink.addEventListener('click', (e) => {
+    e.preventDefault();
     localStorage.removeItem('user');
     window.location.href = 'login.html';
   });
-
-  wrapper.appendChild(img);
-  wrapper.appendChild(logoutBtn);
-  navAnchor.replaceWith(wrapper);
+  logoutItem.appendChild(logoutLink);
+  
+  // Assemble dropdown
+  menu.appendChild(profileItem);
+  
+  menu.appendChild(logoutItem);
+  dropdown.appendChild(img);
+  dropdown.appendChild(menu);
+  
+  navAnchor.replaceWith(dropdown);
 }
 
 document.addEventListener('DOMContentLoaded', renderAuthAvatar);

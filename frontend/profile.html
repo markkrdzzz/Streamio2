@@ -20,50 +20,9 @@
           window.location.replace('login.html');
           return;
         }
-
-        // render avatar in navbar (replace Login/Signup button)
-        try {
-          const user = JSON.parse(raw);
-          let navAnchor = null;
-          const loginAnchor = document.querySelector('a[href="login.html"], a[href="signup.html"]');
-          if (loginAnchor) {
-            navAnchor = loginAnchor.closest('.custom-button') || loginAnchor;
-          } else {
-            navAnchor = document.querySelector('.navbar .container-fluid > .btn.custom-button, .navbar .container-fluid > a.custom-button, .custom-button');
-          }
-          if (navAnchor) {
-            const wrapper = document.createElement('div');
-            wrapper.style.display = 'flex';
-            wrapper.style.alignItems = 'center';
-            wrapper.style.gap = '8px';
-
-            const img = document.createElement('img');
-            img.src = user.avatar || (`https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || user.email || user.name || '')}&background=0D8ABC&color=fff&size=128`);
-            img.alt = 'Profile';
-            img.style.width = '40px';
-            img.style.height = '40px';
-            img.style.borderRadius = '50%';
-            img.style.cursor = 'pointer';
-            img.addEventListener('click', () => window.location.href = 'profile.html');
-
-            const logoutBtn = document.createElement('button');
-            logoutBtn.className = 'btn btn-sm btn-outline-secondary';
-            logoutBtn.textContent = 'Logout';
-            logoutBtn.addEventListener('click', () => {
-              localStorage.removeItem('user');
-              window.location.href = 'login.html';
-            });
-
-            wrapper.appendChild(img);
-            wrapper.appendChild(logoutBtn);
-            navAnchor.replaceWith(wrapper);
-          }
-        } catch (e) {
-          localStorage.removeItem('user');
-          window.location.replace('login.html');
-        }
       });
     </script>
+
     <main>
       <!--Navbar-->
       <nav class="navbar fixed-top bg-body-tertiary">
@@ -184,6 +143,7 @@
         </div>
     </main>
     <script src="index.js"></script>
+    <script src="navbar.js"></script>
   </body>
 </html>
 
