@@ -355,6 +355,8 @@ hr {
     border-radius: 8px;
     margin-bottom: 8px;
     flex-shrink: 0;
+    background-image: url('https://burst.shopifycdn.com/photos/celebrate-carnival-background.jpg?exif=0&iptc=0');
+    background-size: cover;
 }
 
 .video-info {
@@ -393,6 +395,9 @@ hr {
     background-color: #ffffff;
     border-radius: 50%;
     flex-shrink: 0; 
+    background-image: url('https://www.utrgv.edu/community/_files/images/home-thumbnails/utrgv-logo.jpg');
+    background-size: contain;
+    background-position: center;
 }
 
 .title-block {
