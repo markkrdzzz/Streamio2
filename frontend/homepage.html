@@ -55,7 +55,7 @@
     
             <div class="dropdown filter-chip-dropdown">
 
-                 <button class="btn btn-secondary dropdown-toggle filter-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                 <button class="btn btn-secondary dropdown-toggle filter-chip" data-filter="category" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Category <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
@@ -65,7 +65,7 @@
                     <li><a class="dropdown-item" href="#">Gaming</a></li>
                 </ul>
 
-                 <button class="btn btn-secondary dropdown-toggle filter-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                 <button class="btn btn-secondary dropdown-toggle filter-chip" data-filter="school" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     School <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
@@ -75,7 +75,7 @@
                     <li><a class="dropdown-item" href="#">BSN</a></li>
                 </ul>
 
-                <button class="btn btn-secondary dropdown-toggle filter-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-secondary dropdown-toggle filter-chip" data-filter="location" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Location <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
@@ -90,7 +90,7 @@
         <!--Video Placeholders-->
         <div class="video-results" id="videoResults">
           
-            <div class="video-placeholder" data-category="school">
+            <div class="video-placeholder" data-category="all" data-vid-category="Academics" data-vid-school="CSCI" data-vid-location="Edinburg">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -101,7 +101,7 @@
                 </div>
             </div>
 
-            <div class="video-placeholder" data-category="live">
+            <div class="video-placeholder" data-category="live" data-vid-school="UTRGV">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -112,7 +112,7 @@
                 </div>
             </div>
 
-            <div class="video-placeholder" data-category="school">
+            <div class="video-placeholder" data-category="school" data-vid-school="Brownsville">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -123,7 +123,7 @@
                 </div>
             </div>
 
-            <div class="video-placeholder" data-category="clubs">
+            <div class="video-placeholder" data-category="clubs" data-vid-category="Gaming">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -134,7 +134,7 @@
                 </div>
             </div>
 
-            <div class="video-placeholder" data-category="people">
+            <div class="video-placeholder" data-category="people" data-vid-category="Academics">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -145,7 +145,7 @@
                 </div>
             </div>
 
-            <div class="video-placeholder" data-category="live">
+            <div class="video-placeholder" data-category="live" data-vid-category="Events">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -167,7 +167,7 @@
                 </div>
             </div>
 
-            <div class="video-placeholder" data-category="clubs">
+            <div class="video-placeholder" data-category="clubs" data-vid-category="Sports" data-vid-location="Brownsville">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -178,7 +178,7 @@
                 </div>
             </div>
 
-            <div class="video-placeholder" data-category="people">
+            <div class="video-placeholder" data-category="people" data-vid-location="Edinburg">
                 <div class="thumbnail-block"></div>
                 <div class="video-info">
                     <div class="profile-pic"></div>
@@ -356,6 +356,30 @@
             const isLoggedIn = !!localStorage.getItem('user');
             const filterButton = document.getElementById('filterButton');
             const filterOptions = document.getElementById('filterOptions');
+            const saveChangesBtn = document.querySelector('.save-changes-btn');
+
+            // --- Filter State ---
+            const activeDropdownFilters = {
+                category: null,
+                school: null,
+                location: null
+            };
+
+            function filterVideos(mainCategory, dropdownFilters) {
+                videos.forEach(video => {
+                    const videoMainCategory = video.getAttribute('data-category');
+                    const videoCat = video.getAttribute('data-vid-category');
+                    const videoSchool = video.getAttribute('data-vid-school');
+                    const videoLocation = video.getAttribute('data-vid-location');
+
+                    const matchesMain = (mainCategory === 'all' || videoMainCategory === mainCategory);
+                    const matchesCat = !dropdownFilters.category || (videoCat === dropdownFilters.category);
+                    const matchesSchool = !dropdownFilters.school || (videoSchool === dropdownFilters.school);
+                    const matchesLocation = !dropdownFilters.location || (videoLocation === dropdownFilters.location);
+
+                    video.style.display = (matchesMain && matchesCat && matchesSchool && matchesLocation) ? 'flex' : 'none';
+                });
+            }
 
             // ADD: Click event for video placeholders to go to live page
             videos.forEach(video => {
@@ -369,6 +393,8 @@
 
             // Shows the videos of the selected category OR shows events page
             function filterContent(category) {
+                const mainCategory = category || 'all';
+
                 if (category === 'events') {
                     // Hide videos, show events
                     videoResults.style.display = 'none';
@@ -421,6 +447,8 @@
                         video.style.display = (videoCategory === category) ? 'flex' : 'none';
                     });
                 }
+                // Apply filters
+                filterVideos(mainCategory, activeDropdownFilters);
             }
             
             options.forEach(option => {
@@ -436,6 +464,36 @@
                     // Filter content depending on category selected
                     filterContent(selectedCategory);
                 });
+            });
+
+            // --- Dropdown Filter Selection ---
+            document.querySelectorAll('.filter-options-dropdown .dropdown-toggle').forEach(button => {
+                const filterType = button.dataset.filter; // category / school / location
+                const menu = button.nextElementSibling;
+
+                if (!menu) return;
+
+                menu.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const selectedValue = item.textContent.trim();
+
+                        // Update button label
+                        button.innerHTML = `${filterType.charAt(0).toUpperCase() + filterType.slice(1)}: ${selectedValue} <span class="caret"></span>`;
+
+                        // Update state
+                        activeDropdownFilters[filterType] =
+                            selectedValue.toLowerCase().includes('all') ? null : selectedValue;
+                    });
+                });
+            });
+
+            // --- Save Changes ---
+            saveChangesBtn.addEventListener('click', () => {
+                const activeTab = document.querySelector('.option-item.active');
+                const mainCategory = activeTab ? activeTab.getAttribute('data-category') : 'all';
+                filterVideos(mainCategory, activeDropdownFilters);
+                filterOptions.classList.remove('active');
             });
 
             // initial visibility based on auth
