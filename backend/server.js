@@ -88,6 +88,56 @@ app.post("/login", async (req, res) => {
 });
 
 
+// EVENTS: fetch all events
+app.get('/events', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('time', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('Supabase error fetching events:', error);
+      return res.status(500).send('Error fetching events');
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Error in /events get:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// EVENTS: create new event
+app.post('/events', async (req, res) => {
+  try {
+    const payload = req.body;
+
+    // Basic validation
+    if (!payload || !payload.event_name) {
+      return res.status(400).send('Missing event_name');
+    }
+
+    const { data, error } = await supabase
+      .from('events')
+      .insert([payload])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error inserting event:', error);
+      return res.status(500).send('Error creating event');
+    }
+
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Error in /events post:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
 
 
 // Start server

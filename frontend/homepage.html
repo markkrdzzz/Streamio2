@@ -510,6 +510,246 @@
             
         });
     </script>
+        <!-- Supabase client (CDN) -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+        <!-- Events / Supabase logic -->
+        <script>
+            (function() {
+                // Backend API URL (change if your backend runs elsewhere)
+                const API_URL = localStorage.getItem('API_URL') || 'http://localhost:4000';
+
+                // Read Supabase config from localStorage if you still want direct realtime client usage
+                const SUPABASE_URL = localStorage.getItem('SUPABASE_URL') || 'YOUR_SUPABASE_URL';
+                const SUPABASE_ANON_KEY = localStorage.getItem('SUPABASE_ANON_KEY') || 'YOUR_SUPABASE_ANON_KEY';
+
+                const dbNotConfigured = (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL' || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY');
+
+                if (dbNotConfigured) {
+                    console.warn('Supabase URL / ANON KEY not set. To enable events DB integration, store SUPABASE_URL and SUPABASE_ANON_KEY in localStorage or replace the placeholders in the script.');
+                }
+
+                // Robust client creation: support different UMD globals and ESM helpers
+                let supabase = null;
+                try {
+                    if (typeof createClient === 'function') {
+                        supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        console.log('Supabase client created via createClient()');
+                    } else if (typeof supabaseJs !== 'undefined' && typeof supabaseJs.createClient === 'function') {
+                        supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        console.log('Supabase client created via supabaseJs.createClient()');
+                    } else if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+                        // some UMDs expose a `supabase` global with createClient
+                        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        console.log('Supabase client created via window.supabase.createClient()');
+                    } else if (!dbNotConfigured) {
+                        console.warn('Supabase client factory not found on window. Check the loaded supabase script version.');
+                    }
+                } catch (e) {
+                    console.error('Error creating Supabase client:', e);
+                }
+
+                // Helpers
+                function formatDate(iso) {
+                    try {
+                        const d = new Date(iso);
+                        return d.toLocaleString();
+                    } catch (e) { return iso; }
+                }
+
+                function renderEventCard(ev) {
+                    // ev: { event_name, time, description }
+                    const list = document.getElementById('events-list');
+                    if (!list) return;
+
+                    // If the event has an id and we already rendered it, skip to avoid duplicates
+                    const idKey = ev.event_id || ev.id || ev.eventId || ev.eventID;
+                    if (idKey) {
+                        const existing = list.querySelector(`[data-event-id="${idKey}"]`);
+                        if (existing) {
+                            console.debug('Skipping render — event already present:', idKey);
+                            return;
+                        }
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'card event-card shadow-sm';
+                    const body = document.createElement('div');
+                    body.className = 'card-body';
+
+                    const title = document.createElement('h5');
+                    title.className = 'event-card-title';
+                    title.textContent = ev.event_name || 'Untitled Event';
+
+                    const subtitle = document.createElement('h6');
+                    subtitle.className = 'event-card-subtitle';
+                    subtitle.textContent = ev.time ? formatDate(ev.time) : '';
+
+                    // Try to detect a location saved as the first line of description
+                    let locationText = '';
+                    let descriptionText = ev.description || '';
+                    if (descriptionText) {
+                        const parts = descriptionText.split('\n');
+                        if (parts.length > 1 && parts[0].trim().length < 200 && parts[0].length < 200) {
+                            locationText = parts[0].trim();
+                            descriptionText = parts.slice(1).join('\n').trim();
+                        }
+                    }
+
+                    const loc = document.createElement('p');
+                    loc.className = 'event-card-location';
+                    loc.textContent = locationText;
+
+                    const desc = document.createElement('p');
+                    desc.className = 'event-card-description';
+                    desc.textContent = descriptionText;
+
+                    body.appendChild(title);
+                    body.appendChild(subtitle);
+                    if (locationText) body.appendChild(loc);
+                    if (descriptionText) body.appendChild(desc);
+                    card.appendChild(body);
+
+                    // Attach id attribute for deduping if present
+                    if (idKey) card.setAttribute('data-event-id', idKey);
+
+                    // Prepend newest events
+                    list.insertBefore(card, list.firstChild);
+                }
+
+                async function fetchEvents() {
+                    try {
+                        const res = await fetch(API_URL + '/events');
+                        if (!res.ok) throw new Error('Failed to fetch events: ' + res.statusText);
+                        const data = await res.json();
+
+                        // Clear existing dynamic cards
+                        const list = document.getElementById('events-list');
+                        if (!list) return;
+                        list.innerHTML = '';
+
+                        data.forEach(ev => renderEventCard(ev));
+                    } catch (err) {
+                        console.error('Error fetching events from backend:', err.message || err);
+                    }
+                }
+
+                async function createEvent(eventPayload) {
+                    try {
+                        const res = await fetch(API_URL + '/events', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(eventPayload)
+                        });
+
+                        if (!res.ok) {
+                            const text = await res.text().catch(() => res.statusText);
+                            throw new Error('API error: ' + text);
+                        }
+
+                        const created = await res.json();
+                        return created;
+                    } catch (err) {
+                        console.error('Error creating event via backend:', err.message || err);
+                        // fallback: render locally so user sees result
+                        const localEv = Object.assign({}, eventPayload);
+                        renderEventCard(localEv);
+                        return localEv;
+                    }
+                }
+
+                // Realtime subscription with fallback checks (v2 vs v1)
+                function subscribeToInserts() {
+                    if (!supabase) {
+                        console.warn('Supabase client not available - realtime subscription disabled.');
+                        return null;
+                    }
+                    try {
+                        if (typeof supabase.channel === 'function') {
+                            // supabase-js v2 realtime
+                            const channel = supabase.channel('public:events')
+                                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, (payload) => {
+                                    if (payload && payload.new) renderEventCard(payload.new);
+                                })
+                                .subscribe();
+                            return channel;
+                        } else if (typeof supabase.from === 'function') {
+                            // older API fallback
+                            const sub = supabase.from('events').on('INSERT', payload => {
+                                if (payload && payload.new) renderEventCard(payload.new);
+                            }).subscribe();
+                            return sub;
+                        }
+                    } catch (e) {
+                        console.warn('Realtime subscription failed (this is optional):', e.message || e);
+                    }
+                }
+
+                // Wire up form
+                document.addEventListener('DOMContentLoaded', () => {
+                    const form = document.getElementById('event-creation-form');
+                    if (!form) return;
+
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const name = document.getElementById('eventName').value.trim();
+                        const time = document.getElementById('eventTime').value;
+                        const location = document.getElementById('eventLocation').value.trim();
+                        const description = document.getElementById('eventDescription').value.trim();
+
+                        // Get user id from localStorage (depends on your auth payload)
+                        let userId = null;
+                        try {
+                            const raw = localStorage.getItem('user');
+                            if (raw) {
+                                const u = JSON.parse(raw);
+                                userId = u?.id || u?.user_id || u?.userId || null;
+                            }
+                        } catch (err) { /* ignore */ }
+
+                        const payload = {
+                            user_id: userId,
+                            event_name: name,
+                            club_id: null,
+                            school_id: null,
+                            time: time || null,
+                            event_logo: null,
+                            description: (location ? location + '\n\n' : '') + (description || '')
+                        };
+
+                        try {
+                            const created = await createEvent(payload);
+                                // Hide modal
+                            const modalEl = document.getElementById('createEventModal');
+                            try {
+                                const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                                bsModal.hide();
+                            } catch (err) {
+                                // ignore
+                            }
+
+                            // Render created event only if it hasn't already been rendered
+                            if (created) {
+                                const createdId = created.event_id || created.id || created.eventId || created.eventID;
+                                const list = document.getElementById('events-list');
+                                const already = createdId && list ? list.querySelector(`[data-event-id="${createdId}"]`) : null;
+                                if (!already) renderEventCard(created);
+                            }
+
+                            // Reset form
+                            form.reset();
+                        } catch (err) {
+                            alert('Failed to create event. See console for details.');
+                        }
+                    });
+
+                    // Initial load
+                    fetchEvents();
+                    subscribeToInserts();
+                });
+            })();
+        </script>
+
         <!-- auth script: renders avatar if logged in -->
         <script src="./auth.js"></script>
   </body>     
