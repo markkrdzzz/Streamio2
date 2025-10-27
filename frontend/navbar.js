@@ -5,6 +5,11 @@ function renderAuthAvatar() {
   let user;
   try { user = JSON.parse(raw); } catch (e) { localStorage.removeItem('user'); return; }
   
+  // Ensure user has a name property (fallback to username)
+  if (!user.name) {
+    user.name = user.username;
+  }
+  
   // find the login/signup element specifically so we don't match the search button
   let navAnchor = null;
   const loginAnchor = document.querySelector('a[href="login.html"], a[href="signup.html"]');
@@ -20,7 +25,7 @@ function renderAuthAvatar() {
   dropdown.style.position = 'static';
   
   const img = document.createElement('img');
-  img.src = img.src = 'default_pfp.svg'
+  img.src = 'default_pfp.svg'
   img.alt = 'Profile';
   img.style.width = '40px';
   img.style.height = '40px';
@@ -40,10 +45,23 @@ function renderAuthAvatar() {
     background-color: #afd5eb !important;
   `;
   
+  // Add user name header
+  const nameHeader = document.createElement('li');
+  const nameText = document.createElement('h6');
+  nameText.className = 'dropdown-header';
+  nameText.textContent = user.name || user.username;
+  nameText.style.fontWeight = 'bold';
+  nameText.style.color = '#333';
+  nameHeader.appendChild(nameText);
+  
+  const divider = document.createElement('li');
+  divider.innerHTML = '<hr class="dropdown-divider">';
+  
   const profileItem = document.createElement('li');
   const profileLink = document.createElement('a');
   profileLink.className = 'dropdown-item';
-  profileLink.href = 'profile.html';
+  // Set profile link to include the logged-in user's username
+  profileLink.href = `profile.html?user=${user.username}`;
   profileLink.innerHTML = '<i class="bi bi-person"></i> Profile';
   profileItem.appendChild(profileLink);
   
@@ -61,6 +79,8 @@ function renderAuthAvatar() {
   });
   logoutItem.appendChild(logoutLink);
   
+  menu.appendChild(nameHeader);
+  menu.appendChild(divider);
   menu.appendChild(profileItem);
   
   menu.appendChild(logoutItem);
@@ -74,7 +94,6 @@ function renderAuthAvatar() {
     menu.style.setProperty('background-color', '#afd5eb', 'important');
   }, 0);
 }
-
 // Auto-run on page load
 document.addEventListener('DOMContentLoaded', () => {
   renderAuthAvatar();

@@ -1,5 +1,3 @@
-// auth.js
-
 const API_URL = "http://localhost:4000"; // your backend URL
 
 // --- SIGNUP ---
@@ -16,7 +14,7 @@ if (signupForm) {
 
     // Check if passwords match
     if (password !== confirmPassword) {
-      alert("❌ Passwords do not match");
+      alert("Passwords do not match");
       return;
     }
 
@@ -33,7 +31,7 @@ if (signupForm) {
       window.location.href = "login.html";
     } else {
       const errorText = await res.text();
-      alert("❌ Failed to create account: " + errorText);
+      alert("Failed to create account: " + errorText);
     }
   });
 }
@@ -55,11 +53,11 @@ if (loginForm) {
     if (res.ok) {
       const user = await res.json();
       localStorage.setItem("user", JSON.stringify(user));
-      alert(`👋 Welcome back, ${user.username}!`);
+      alert(`Welcome back, ${user.username}!`);
       window.location.href = "homepage.html"; // redirect to homepage
     } else {
       const errorText = await res.text();
-      alert("❌ " + errorText);
+      alert(errorText);
     }
   });
 }
@@ -70,6 +68,11 @@ function renderAuthAvatar() {
   if (!raw) return;
   let user;
   try { user = JSON.parse(raw); } catch (e) { localStorage.removeItem('user'); return; }
+  
+  // Ensure user has a name property (fallback to username)
+  if (!user.name) {
+    user.name = user.username;
+  }
   
   // find the login/signup element specifically so we don't match the search button
   let navAnchor = null;
@@ -85,6 +88,7 @@ function renderAuthAvatar() {
   // Create dropdown wrapper
   const dropdown = document.createElement('div');
   dropdown.className = 'dropdown';
+  dropdown.style.position = 'static';
   
   // Create profile image button
   const img = document.createElement('img');
@@ -109,15 +113,25 @@ function renderAuthAvatar() {
     background-color: #afd5eb !important;
   `;
   
+  // Add user name header
+  const nameHeader = document.createElement('li');
+  const nameText = document.createElement('h6');
+  nameText.className = 'dropdown-header';
+  nameText.textContent = user.name || user.username;
+  nameText.style.fontWeight = 'bold';
+  nameText.style.color = '#333';
+  nameHeader.appendChild(nameText);
+  
+  const divider = document.createElement('li');
+  divider.innerHTML = '<hr class="dropdown-divider">';
+  
   // Profile link
   const profileItem = document.createElement('li');
   const profileLink = document.createElement('a');
   profileLink.className = 'dropdown-item';
-  profileLink.href = 'profile.html';
+  profileLink.href = `profile.html?user=${user.username}`;
   profileLink.innerHTML = '<i class="bi bi-person"></i> Profile';
   profileItem.appendChild(profileLink);
-  
-  
   
   // Logout link
   const logoutItem = document.createElement('li');
@@ -133,13 +147,19 @@ function renderAuthAvatar() {
   logoutItem.appendChild(logoutLink);
   
   // Assemble dropdown
+  menu.appendChild(nameHeader);
+  menu.appendChild(divider);
   menu.appendChild(profileItem);
-  
   menu.appendChild(logoutItem);
   dropdown.appendChild(img);
   dropdown.appendChild(menu);
   
   navAnchor.replaceWith(dropdown);
+  
+  // Force the background color after a short delay to override Bootstrap
+  setTimeout(() => {
+    menu.style.setProperty('background-color', '#afd5eb', 'important');
+  }, 0);
 }
 
 document.addEventListener('DOMContentLoaded', renderAuthAvatar);

@@ -137,9 +137,70 @@ app.post('/events', async (req, res) => {
   }
 });
 
+// GET USER by username
+app.get('/users/:username', async (req, res) => {
+  const { username } = req.params;
+  
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('user_id, username, email, name, bio, profile_picture')
+      .eq('username', username)
+      .single();
+    
+    if (error || !data) {
+      return res.status(404).send('User not found');
+    }
+    
+    // TODO: Fetch user's clubs and events from your database
+    // For now, returning empty arrays
+    res.json({
+      ...data,
+      clubs: [], // Replace with actual clubs query
+      events: [] // Replace with actual events query
+    });
+    
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
+// UPDATE USER profile
+app.put('/users/:username', async (req, res) => {
+  const { username } = req.params;
+  const { name, bio, profile_picture } = req.body;
+  
+  try {
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (bio !== undefined) updateData.bio = bio;
+    if (profile_picture !== undefined) updateData.profile_picture = profile_picture;
+    
+    const { data, error } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('username', username)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating user:', error);
+      return res.status(500).send('Error updating profile');
+    }
+    
+    res.json({ message: 'Profile updated successfully', user: data });
+    
+  } catch (err) {
+    console.error('Error updating user:', err);
+    res.status(500).send('Server error');
+  }
+});
+
 
 
 
 // Start server
 const PORT = 4000;
-app.listen(PORT, () => console.log(`✅ Server running at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
