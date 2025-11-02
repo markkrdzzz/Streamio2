@@ -198,6 +198,28 @@ app.put('/users/:username', async (req, res) => {
   }
 });
 
+// GET CLUB by ID
+app.get('/clubs/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const { data, error } = await supabase
+      .from('clubs')
+      .select('club_id, club_name, category, description')
+      .eq('club_id', id)
+      .single();
+    
+    if (error || !data) {
+      return res.status(404).send('Club not found');
+    }
+    
+    res.json(data);
+    
+  } catch (err) {
+    console.error('Error fetching club:', err);
+    res.status(500).send('Server error');
+  }
+});
 
 
 
