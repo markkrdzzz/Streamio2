@@ -218,6 +218,9 @@ app.get('/clubs', async (req, res) => {
       return res.status(500).send('Error fetching clubs');
     }
     
+    // Debug: Log the data being returned
+    console.log('Clubs fetched:', JSON.stringify(data, null, 2));
+    
     res.json(data || []);
     
   } catch (err) {
@@ -260,8 +263,8 @@ app.get('/clubs/:id', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('clubs')
-      .select('club_id, club_name, category, description')
-      .eq('club_id', id)
+      .select('id, club_name, category, description')
+      .eq('id', id)
       .single();
     
     if (error || !data) {
@@ -291,7 +294,7 @@ app.put('/clubs/:id', async (req, res) => {
     const { data, error } = await supabase
       .from('clubs')
       .update(updateData)
-      .eq('club_id', id)
+      .eq('id', id)
       .select()
       .single();
     
@@ -313,10 +316,22 @@ app.delete('/clubs/:id', async (req, res) => {
   const { id } = req.params;
   
   try {
+    // First, update any events that reference this club to have null club_id
+    const { error: updateError } = await supabase
+      .from('events')
+      .update({ club_id: null })
+      .eq('club_id', id);
+    
+    if (updateError) {
+      console.error('Error updating events for club deletion:', updateError);
+      // Continue anyway - the club might not have events
+    }
+    
+    // Then delete the club
     const { error } = await supabase
       .from('clubs')
       .delete()
-      .eq('club_id', id);
+      .eq('id', id);
     
     if (error) {
       console.error('Error deleting club:', error);

@@ -102,7 +102,7 @@ async function loadUserClubs(userId) {
 
     // Display clubs
     clubsList.innerHTML = clubs.map(club => `
-      <div class="card mb-3" style="background-color: #666666; color: white; border: 1px solid #444;" data-club-id="${club.club_id}">
+      <div class="card mb-3" style="background-color: #666666; color: white; border: 1px solid #444;" data-club-id="${club.id}">
         <div class="card-body">
           <h5 class="card-title" style="color: #afd5eb; font-weight: 700;">${club.club_name}</h5>
           <p class="card-text" style="color: #ffffffff;">${club.description || 'No description'}</p>
@@ -110,8 +110,8 @@ async function loadUserClubs(userId) {
           ${club.contact_email ? `<p class="mt-2 mb-0" style="color: #ffffffff; font-size: 0.9rem;">Contact: ${club.contact_email}</p>` : ''}
           ${isOwnProfile ? `
             <div class="mt-3">
-              <button class="btn btn-sm edit-club-btn" style="background-color: #afd5eb;" data-club-id="${club.club_id}">Edit</button>
-              <button class="btn btn-sm btn-danger delete-club-btn" data-club-id="${club.club_id}">Delete</button>
+              <button class="btn btn-sm edit-club-btn" style="background-color: #afd5eb;" data-club-id="${club.id}">Edit</button>
+              <button class="btn btn-sm btn-danger delete-club-btn" data-club-id="${club.id}">Delete</button>
             </div>
           ` : ''}
         </div>
@@ -123,7 +123,7 @@ async function loadUserClubs(userId) {
       document.querySelectorAll('.edit-club-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const clubId = e.target.dataset.clubId;
-          const club = clubs.find(c => c.club_id == clubId);
+          const club = clubs.find(c => c.id == clubId);
           openEditClubModal(club);
         });
       });
@@ -131,6 +131,7 @@ async function loadUserClubs(userId) {
       document.querySelectorAll('.delete-club-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const clubId = e.target.dataset.clubId;
+          console.log('Delete club clicked, clubId:', clubId); // Debug log
           if (confirm('Are you sure you want to delete this club?')) {
             await deleteClub(clubId);
           }
@@ -502,6 +503,13 @@ async function updateClub(clubId, updatedData) {
 
 async function deleteClub(clubId) {
   try {
+    // Validate clubId
+    if (!clubId || clubId === 'null' || clubId === 'undefined') {
+      console.error('Invalid club ID:', clubId);
+      alert('Invalid club ID. Please refresh the page and try again.');
+      return;
+    }
+
     const response = await fetch(`http://localhost:4000/clubs/${clubId}`, {
       method: 'DELETE'
     });
