@@ -112,14 +112,23 @@
     .messages {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       background: #ccc;
       color: black;
       padding: 10px;
       margin-bottom: 10px;
       min-height: 0;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: pre-wrap;
     }
     .message {
       margin-bottom: 8px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
     .message .username {
       font-weight: bold;
@@ -128,6 +137,11 @@
     .chat-input {
       display: flex;
       gap: 5px;
+    }
+    #messageInput {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
     }
   </style>
 </head>
