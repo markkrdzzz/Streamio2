@@ -278,6 +278,40 @@ hr {
     border-bottom: 2px solid #afd5eb;
 }
 
+.live-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.live-item {
+  width: 250px;
+  background-color: transparent;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  color: white;
+}
+
+.live-item:hover {
+  background-color: #555555;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.live-item.selected {
+  background-color: #007bff;
+  transform: none;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px #007bff;
+  color: white;
+}
+
+
 .filter-button {
     background-color: #afd5eb;
     color: #333;
