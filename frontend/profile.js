@@ -386,6 +386,90 @@ function initializeProfilePage() {
   filterContent(initialCategory); 
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const liveForm = document.getElementById('live-creation-form');
+  const livePage = document.getElementById('livePage');
+  const aboutPage = document.getElementById('aboutPage');
+  const createLiveModal = document.getElementById('createLiveModal');
+  const liveList = document.getElementById('liveList');
+
+  if (!liveForm) return;
+
+  // Create live submission handler
+  liveForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('liveTitle').value.trim();
+    const category = document.getElementById('liveCategory').value;
+    const description = document.getElementById('liveDescription').value.trim();
+
+    if (!title || !category || !description) {
+      alert('Please fill out all fields.');
+      return;
+    }
+
+    // Create live data object
+    const liveData = {
+      title,
+      category,
+      description,
+      time: new Date().toLocaleString()
+    };
+
+    // Save to localStorage (so we can also show it on homepage)
+    let lives = JSON.parse(localStorage.getItem('lives')) || [];
+    lives.push(liveData);
+    localStorage.setItem('lives', JSON.stringify(lives));
+
+    // Add to live list immediately
+    addLiveToList(liveData);
+
+    // Close the modal
+    const modalInstance = bootstrap.Modal.getInstance(createLiveModal);
+    modalInstance.hide();
+
+    // Switch to the live page
+    if (aboutPage) aboutPage.style.display = 'none';
+    if (livePage) livePage.style.display = 'block';
+
+    alert(`You're now live: "${title}"`);
+  });
+
+    // Helper: add new live card to live list
+    function addLiveToList(live) {
+    if (!liveList) return;
+
+    const card = document.createElement('div');
+    card.className = 'live-item';
+    card.innerHTML = `
+      <div class="thumbnail-block"></div>
+      <div class="title-block">
+        <h5 style="font-size: 15px; font-weight: 600; color: #afd5eb;">${live.title}</h5>
+      </div>
+      <div class="video-info">
+        <span>${live.description}</span>
+        <span class="video-filter-tag">${live.category}</span>
+        <span style="font-size: 10px; color: #999;">${live.time}</span>
+      </div>
+    `;
+
+    // If this is the first live, clear placeholder text
+    if (liveList.querySelector('p.text-center')) {
+      liveList.innerHTML = '';
+    }
+
+    liveList.prepend(card);
+  }
+
+
+  // On load, show existing lives from localStorage
+  const savedLives = JSON.parse(localStorage.getItem('lives')) || [];
+  if (savedLives.length > 0) {
+    liveList.innerHTML = '';
+    savedLives.forEach(live => addLiveToList(live));
+  }
+});
+
 // Edit/delete club functions
 function openEditClubModal(club) {
   // Create modal HTML if it doesn't exist

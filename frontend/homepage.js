@@ -16,6 +16,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterOptions = document.getElementById('filterOptions');
     const saveChangesBtn = document.querySelector('.save-changes-btn');
 
+
+        const homepageLiveList = document.getElementById('liveList'); 
+        const lives = JSON.parse(localStorage.getItem('lives')) || [];
+
+        if (lives.length === 0) {
+        homepageLiveList.innerHTML = '<p class="text-center" style="color: #888;">No one is live right now</p>';
+        } else {
+        homepageLiveList.innerHTML = lives.map(live => `
+            <div class="live-item">
+            <div class="thumbnail-block"></div>
+            <div class="title-block">
+                <h5 style="font-size: 15px; font-weight: 600; color: #afd5eb;">${live.title}</h5>
+            </div>
+            <div class="video-info">
+                <span>${live.description}</span>
+                <span class="video-filter-tag">${live.category}</span>
+                <span style="font-size: 10px; color: #999;">${live.time}</span>
+            </div>
+            </div>
+        `).join('');
+        }
+
+
     // --- Filter State ---
     const activeDropdownFilters = {
         category: null,
