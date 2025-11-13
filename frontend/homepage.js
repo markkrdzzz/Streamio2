@@ -25,16 +25,29 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
         homepageLiveList.innerHTML = lives.map(live => `
             <div class="live-item">
-            <div class="thumbnail-block"></div>
-            <div class="title-block">
-                <h5 style="font-size: 15px; font-weight: 600; color: #afd5eb;">${live.title}</h5>
+            <div class="thumbnail-block">
+                
             </div>
             <div class="video-info">
-                <span>${live.description}</span>
-                <span class="video-filter-tag">${live.category}</span>
-                <span style="font-size: 10px; color: #999;">${live.time}</span>
+                <div class="profile-pic">
+                    
+                </div>
+                <div>
+                    <div class="title-block">
+                        <h5 style="font-size: 14px; line-height: 1.2;font-weight: bold; width:100%; min-width: 0; color: #ffffff;">${live.title}</h5>
+                    </div>
+                    <span class="video-filter-tag" style="font-size: 11px;
+                        font-weight: 500;
+                        color: #bbb;
+                        background-color: #555555;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        display: inline-block; 
+                        margin-top: 4px; 
+                        white-space: nowrap; ">${live.category}</span>
+                </div>
             </div>
-            </div>
+        </div>
         `).join('');
         }
 

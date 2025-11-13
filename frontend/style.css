@@ -279,15 +279,16 @@ hr {
 }
 
 .live-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 250px);
   gap: 20px;
-  justify-content: flex-start;
-  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
 }
 
 .live-item {
-  width: 250px;
+  width: 100%;
   background-color: transparent;
   border-radius: 8px;
   display: flex;
@@ -309,6 +310,69 @@ hr {
   transform: none;
   box-shadow: 0 0 0 3px #fff, 0 0 0 6px #007bff;
   color: white;
+}
+
+.live-item .thumbnail-block {
+    width: 100%;
+    height: 111px; 
+    padding-top: 0;
+
+    background-color: #666; 
+    border-radius: 8px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    background-image: url('https://burst.shopifycdn.com/photos/celebrate-carnival-background.jpg?exif=0&iptc=0');
+    background-size: cover;
+}
+
+.live-item .video-info {
+    display: flex; 
+    align-items: flex-start;
+    gap: 10px;
+    padding: 0 10px; 
+}
+
+.live-item .video-info > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.live-item .video-filter-tag {
+    font-size: 11px;
+    font-weight: 500;
+    color: #bbb;
+    background-color: #555555;
+    
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block; 
+    margin-top: 4px; 
+    white-space: nowrap;
+}
+
+.live-item .video-placeholder.selected .video-filter-tag {
+    background-color: #fff; 
+    color: #007bff;
+}
+
+.live-item .profile-pic {
+    width: 36px;
+    height: 36px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    flex-shrink: 0; 
+    background-image: url('https://www.utrgv.edu/community/_files/images/home-thumbnails/utrgv-logo.jpg');
+    background-size: contain;
+    background-position: center;
+}
+
+.live-item .title-block {
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1.2;
+    color: #ffffff;
+    width: 100%; 
+    min-width: 0; 
 }
 
 

@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!liveForm) return;
 
-  // Create live submission handler
+  // Create live
   liveForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -442,16 +442,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = document.createElement('div');
     card.className = 'live-item';
     card.innerHTML = `
-      <div class="thumbnail-block"></div>
-      <div class="title-block">
-        <h5 style="font-size: 15px; font-weight: 600; color: #afd5eb;">${live.title}</h5>
-      </div>
-      <div class="video-info">
-        <span>${live.description}</span>
-        <span class="video-filter-tag">${live.category}</span>
-        <span style="font-size: 10px; color: #999;">${live.time}</span>
-      </div>
-    `;
+            
+            <div class="thumbnail-block">
+                
+            </div>
+            <div class="video-info">
+                
+                <div class="profile-pic">
+                    
+                </div>
+                
+                <div class="title-and-tag-container">
+                    
+                    <div class="title-block" style="
+                        font-weight: bold;
+                        font-size: 14px;
+                        line-height: 1.2;
+                        color: #ffffff;
+                        width: 100%; 
+                        min-width: 0;
+                    ">
+                        ${live.title}
+                    </div>
+                    
+                    <span class="video-filter-tag" style="
+                        font-size: 11px;
+                        font-weight: 500;
+                        color: #bbb;
+                        background-color: #555555;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        display: inline-block; 
+                        margin-top: 4px; 
+                        white-space: nowrap;
+                    ">${live.category}</span>
+                </div>
+            </div>
+        `;
 
     // If this is the first live, clear placeholder text
     if (liveList.querySelector('p.text-center')) {
