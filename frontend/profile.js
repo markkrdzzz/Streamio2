@@ -823,3 +823,36 @@ async function deleteEvent(eventId) {
     alert('Failed to delete event. Please try again.');
   }
 }
+
+// ============================================
+// GO LIVE FUNCTIONALITY
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  const liveForm = document.getElementById('live-creation-form');
+  if (liveForm) {
+    liveForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const title = document.getElementById('liveTitle').value.trim();
+      const category = document.getElementById('liveCategory').value;
+      const description = document.getElementById('liveDescription').value.trim();
+
+      if (!title || !category) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      // Store stream data in localStorage
+      const streamData = {
+        title,
+        category,
+        description
+      };
+      localStorage.setItem('pendingStream', JSON.stringify(streamData));
+
+      // Redirect to broadcast page
+      window.location.href = 'broadcast.html';
+    });
+  }
+});

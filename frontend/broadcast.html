@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Broadcasting - Streamio</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #1c1c1c;
+      color: white;
+    }
+    body {
+      padding-top: 60px;
+    }
+    .navbar {
+      background-color: #1a1919 !important;
+      min-height: 60px; 
+      padding: 0;
+    }
+    .navbar .container-fluid {
+      padding: 0 16px; 
+      min-height: 60px; 
+    }
+    .content-wrapper {
+      display: grid;
+      grid-template-columns: 220px 1fr 300px;
+      height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+    .sidebar {
+      background: #5a5a5a;
+      padding: 15px 10px;
+      overflow-y: auto;
+      height: 100%;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: white;
+      font-weight: 600;
+    }
+    .sidebar .stream-item {
+      display: flex;
+      align-items: center;
+      margin: 0 0 15px 0;
+      padding: 0;
+      cursor: pointer;
+    }
+    .sidebar .stream-item .icon {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .sidebar .stream-item .icon img{
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .sidebar .stream-item .stream-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .sidebar .stream-item .stream-info .username {
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .sidebar .stream-item .stream-info .stream-title {
+      color: #ccc;
+      font-size: 12px;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .main {
+      background: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      overflow-y: auto;
+      height: 100%;
+    }
+    .live-video {
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    #localVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .stream-info {
+      background: #ccc;
+      color: black;
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    .stream-controls {
+      background: #ccc;
+      color: black;
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    .status-indicator {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .status-live {
+      background: #ff0000;
+      color: white;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .status-offline {
+      background: #666;
+      color: white;
+    }
+    .chat {
+      background: #333;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      height: 100%;
+      overflow: hidden;
+    }
+    .chat h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      background: #ccc;
+      color: black;
+      padding: 10px;
+      margin-bottom: 10px;
+      min-height: 0;
+      border-radius: 8px;
+    }
+    .chat-message {
+      margin-bottom: 8px;
+      word-wrap: break-word;
+    }
+    .chat-username {
+      font-weight: bold;
+      color: #1e90ff;
+    }
+    @media (max-width: 992px) {
+      .content-wrapper {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar fixed-top bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="homepage.html"><img src="logo.svg" width="90"></a>
+      <h4 id="navbarTitle" style="color: white; margin: 0;">Broadcasting Studio</h4>
+      <a href="profile.html" class="btn custom-button">Back to Profile</a>
+    </div>
+  </nav>
+
+  <div class="content-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar" style="padding-top:20px">
+      <h3>Streaming Now</h3>
+      <p style="color: #ccc; text-align: center; font-size: 14px;">Loading streams...</p>
+    </aside>
+    
+    <!-- Main content -->
+    <main class="main">
+      <div class="live-video">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div style="position: absolute; top: 10px; left: 10px;">
+          <span id="streamStatus" class="status-indicator status-offline">OFFLINE</span>
+        </div>
+      </div>
+      
+      <div class="stream-info">
+        <h4 id="streamTitle" style="margin: 5px 0;">Loading...</h4>
+        <p id="streamDescription" style="color: #666; margin: 5px 0;"></p>
+        <div style="margin-top: 10px;">
+          <span style="display: inline-block; margin-right: 15px;">
+            <strong>Viewers:</strong> <span id="viewerCount" style="color: #4a9eff;">0</span>
+          </span>
+          <span style="display: inline-block;">
+            <strong>Duration:</strong> <span id="streamDuration" style="color: #4a9eff;">00:00</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="stream-controls">
+        <h5 style="margin-top: 0;">Stream Controls</h5>
+        <div class="control-buttons">
+          <button id="startBtn" class="btn btn-danger">🔴 Start Streaming</button>
+          <button id="stopBtn" class="btn btn-secondary" disabled>⏹️ Stop Streaming</button>
+          <button id="toggleCameraBtn" class="btn btn-outline-secondary">
+            <span id="cameraIcon">📷</span> Camera
+          </button>
+          <button id="toggleMicBtn" class="btn btn-outline-secondary">
+            <span id="micIcon">🎤</span> Mic
+          </button>
+        </div>
+        <div style="margin-top: 15px;">
+          <small style="color: #666;">Share your stream: </small><br>
+          <a id="streamLink" href="#" target="_blank" style="color: #4a9eff; word-break: break-all; font-size: 14px;">Waiting to go live...</a>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Chat -->
+    <section class="chat" style="padding-top:20px">
+      <h3>Live Chat</h3>
+      <div class="chat-messages" id="chatMessages">
+        <p style="color: #888; text-align: center;">Chat will appear here when you go live</p>
+      </div>
+      <div class="input-group">
+        <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." disabled>
+        <button class="btn custom-button" id="sendChatBtn" disabled>Send</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <script>
+    const API_URL = 'http://localhost:4000';
+    let localStream = null;
+    let streamId = null;
+    let isLive = false;
+    let startTime = null;
+    let durationInterval = null;
+    let cameraEnabled = true;
+    let micEnabled = true;
+
+    // Get stream data from localStorage
+    const streamData = JSON.parse(localStorage.getItem('pendingStream') || '{}');
+
+    // Get logged-in user
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.id && !user.user_id) {
+      alert('Please log in to start streaming');
+      window.location.href = 'login.html';
+    }
+
+    // Initialize
+    async function init() {
+      document.getElementById('streamTitle').textContent = streamData.title || 'Untitled Stream';
+      document.getElementById('streamDescription').textContent = streamData.description || '';
+
+      // Request camera and mic access
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 1280, height: 720 }, 
+          audio: true 
+        });
+        document.getElementById('localVideo').srcObject = localStream;
+        console.log('Camera and microphone access granted');
+      } catch (error) {
+        console.error('Error accessing media devices:', error);
+        alert('Could not access camera or microphone. Please grant permissions and refresh the page.');
+      }
+    }
+
+    // Start streaming
+    document.getElementById('startBtn').addEventListener('click', async () => {
+      if (!localStream) {
+        alert('Camera not ready. Please refresh and try again.');
+        return;
+      }
+
+      try {
+        // Generate unique room name
+        const uniqueRoomName = `room_${user.id || user.user_id}_${Date.now()}`;
+        
+        // Create livestream in database
+        const response = await fetch(`${API_URL}/livestreams`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id || user.user_id,
+            title: streamData.title,
+            description: streamData.description,
+            category: streamData.category,
+            room_name: uniqueRoomName
+          })
+        });
+
+        if (!response.ok) throw new Error('Failed to create livestream');
+
+        const livestream = await response.json();
+        streamId = livestream.id;
+        isLive = true;
+        startTime = Date.now();
+
+        // Update UI
+        document.getElementById('streamStatus').textContent = '🔴 LIVE';
+        document.getElementById('streamStatus').className = 'status-indicator status-live';
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('sendChatBtn').disabled = false;
+
+        // Update navbar title to show who's live
+        const username = user.username || user.name || 'User';
+        document.getElementById('navbarTitle').textContent = `${username}'s Live`;
+
+        // Set stream link
+        const streamLink = `${window.location.origin}/live.html?stream=${streamId}`;
+        document.getElementById('streamLink').href = streamLink;
+        document.getElementById('streamLink').textContent = streamLink;
+
+        // Start duration counter
+        durationInterval = setInterval(updateDuration, 1000);
+
+        // Add system message to chat
+        addChatMessage('System', 'You are now live! 🎉', true);
+
+        alert('You are now live! Share your link with viewers.');
+
+      } catch (error) {
+        console.error('Error starting stream:', error);
+        alert('Failed to start stream. Please try again.');
+      }
+    });
+
+    // Stop streaming
+    document.getElementById('stopBtn').addEventListener('click', async () => {
+      if (!isLive) return;
+
+      if (!confirm('Are you sure you want to end your stream?')) return;
+
+      try {
+        // End livestream in database
+        await fetch(`${API_URL}/livestreams/${streamId}`, {
+          method: 'DELETE'
+        });
+
+        // Stop local stream
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+        }
+
+        isLive = false;
+        clearInterval(durationInterval);
+
+        alert('Stream ended successfully!');
+        localStorage.removeItem('pendingStream');
+        window.location.href = 'profile.html';
+
+      } catch (error) {
+        console.error('Error stopping stream:', error);
+        alert('Failed to end stream properly.');
+      }
+    });
+
+    // Toggle camera
+    document.getElementById('toggleCameraBtn').addEventListener('click', () => {
+      if (!localStream) return;
+      cameraEnabled = !cameraEnabled;
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = cameraEnabled;
+        document.getElementById('cameraIcon').textContent = cameraEnabled ? '📷' : '📷❌';
+      }
+    });
+
+    // Toggle mic
+    document.getElementById('toggleMicBtn').addEventListener('click', () => {
+      if (!localStream) return;
+      micEnabled = !micEnabled;
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = micEnabled;
+        document.getElementById('micIcon').textContent = micEnabled ? '🎤' : '🎤❌';
+      }
+    });
+
+    // Update duration
+    function updateDuration() {
+      if (!startTime) return;
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+      const seconds = (elapsed % 60).toString().padStart(2, '0');
+      document.getElementById('streamDuration').textContent = `${minutes}:${seconds}`;
+    }
+
+    // Add chat message
+    function addChatMessage(username, message, isSystem = false) {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'chat-message';
+      messageDiv.innerHTML = `
+        <span class="chat-username" style="${isSystem ? 'color: #ffa500;' : ''}">${username}</span>: ${message}
+      `;
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Send chat (for testing purposes)
+    document.getElementById('sendChatBtn').addEventListener('click', () => {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (message) {
+        addChatMessage(user.username || user.name || 'You', message);
+        input.value = '';
+      }
+    });
+
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('sendChatBtn').click();
+      }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', (e) => {
+      if (isLive) {
+        e.preventDefault();
+        e.returnValue = 'You are currently live. Are you sure you want to leave?';
+      }
+    });
+
+    // Initialize on page load
+    init();
+
+    // Load active livestreams in sidebar
+    async function loadActiveLivestreams() {
+      try {
+        const response = await fetch(`${API_URL}/livestreams`);
+        const streams = await response.json();
+
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.innerHTML = '<h3>Streaming Now</h3>';
+
+        if (streams.length === 0) {
+          sidebar.innerHTML += '<p style="color: #ccc; text-align: center; font-size: 14px;">No active streams</p>';
+          return;
+        }
+
+        streams.forEach(stream => {
+          const streamItem = document.createElement('div');
+          streamItem.className = 'stream-item';
+
+          streamItem.innerHTML = `
+            <div class="icon">
+              <a href="profile.html?user=${stream.user_id}">
+                <img src="${stream.users?.profile_picture || 'https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg'}">
+              </a>
+            </div>
+            <div class="stream-info">
+              <a href="live.html?stream=${stream.id}" class="username">
+                ${stream.users?.username || 'Unknown'}
+              </a>
+              <span class="stream-title">${stream.title}</span>
+            </div>
+          `;
+          
+          sidebar.appendChild(streamItem);
+        });
+
+      } catch (error) {
+        console.error('Error loading livestreams:', error);
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.innerHTML = '<h3>Streaming Now</h3><p style="color: #ccc; text-align: center; font-size: 14px;">Unable to load streams</p>';
+      }
+    }
+
+    // Load streams on page load and refresh every 30 seconds
+    loadActiveLivestreams();
+    setInterval(loadActiveLivestreams, 30000);
+  </script>
+  <script src="navbar.js"></script>
+</body>
+</html>

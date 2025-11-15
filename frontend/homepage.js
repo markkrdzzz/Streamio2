@@ -16,42 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterOptions = document.getElementById('filterOptions');
     const saveChangesBtn = document.querySelector('.save-changes-btn');
 
-
-        const homepageLiveList = document.getElementById('liveList'); 
-        const lives = JSON.parse(localStorage.getItem('lives')) || [];
-
-        if (lives.length === 0) {
-        homepageLiveList.innerHTML = '<p class="text-center" style="color: #888;">No one is live right now</p>';
-        } else {
-        homepageLiveList.innerHTML = lives.map(live => `
-            <div class="live-item">
-            <div class="thumbnail-block">
-                
-            </div>
-            <div class="video-info">
-                <div class="profile-pic">
-                    
-                </div>
-                <div>
-                    <div class="title-block">
-                        <h5 style="font-size: 14px; line-height: 1.2;font-weight: bold; width:100%; min-width: 0; color: #ffffff;">${live.title}</h5>
-                    </div>
-                    <span class="video-filter-tag" style="font-size: 11px;
-                        font-weight: 500;
-                        color: #bbb;
-                        background-color: #555555;
-                        padding: 2px 6px;
-                        border-radius: 4px;
-                        display: inline-block; 
-                        margin-top: 4px; 
-                        white-space: nowrap; ">${live.category}</span>
-                </div>
-            </div>
-        </div>
-        `).join('');
-        }
-
-
     // --- Filter State ---
     const activeDropdownFilters = {
         category: null,
@@ -629,3 +593,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 })();
+
+// ============================================
+// LOAD LIVE STREAMS ON HOMEPAGE
+// ============================================
+
+async function loadLiveStreams() {
+    try {
+        const response = await fetch('http://localhost:4000/livestreams');
+        const streams = await response.json();
+
+        const liveList = document.getElementById('liveList');
+        if (!liveList) return;
+
+        liveList.innerHTML = '';
+
+        if (streams.length === 0) {
+            liveList.innerHTML = '<p class="text-center" style="color: #888;">No one is live right now</p>';
+            return;
+        }
+
+        streams.forEach(stream => {
+            const card = document.createElement('div');
+            card.className = 'video-placeholder';
+            card.style.cursor = 'pointer';
+            card.onclick = () => window.location.href = `live.html?stream=${stream.id}`;
+            
+            card.innerHTML = `
+                <div class="thumbnail-block" style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div style="position: absolute; top: 10px; left: 10px; background: red; color: white; padding: 4px 10px; border-radius: 3px; font-weight: bold; font-size: 12px;">
+                        🔴 LIVE
+                    </div>
+                    <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">
+                        👁️ ${stream.viewer_count || 0}
+                    </div>
+                </div>
+                <div class="video-info">
+                    <div class="profile-pic" style="background-image: url('${stream.users?.profile_picture || 'https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg'}'); background-size: cover; width: 40px; height: 40px;"></div>
+                    <div style="flex: 1;">
+                        <div class="title-block" style="color: #afd5eb; font-weight: 600;">${stream.title}</div>
+                        <span class="video-filter-tag">${stream.users?.username || 'Unknown'}</span>
+                        <span class="video-filter-tag">${stream.category || 'General'}</span>
+                    </div>
+                </div>
+            `;
+            
+            liveList.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error('Error loading livestreams:', error);
+        const liveList = document.getElementById('liveList');
+        if (liveList) {
+            liveList.innerHTML = '<p class="text-center" style="color: #888;">Unable to load streams</p>';
+        }
+    }
+}
+
+// Load livestreams when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    loadLiveStreams();
+    // Refresh every 10 seconds to keep live streams updated
+    setInterval(loadLiveStreams, 10000);
+});
+
+// Refresh when page becomes visible (e.g., when returning from another tab/page)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        loadLiveStreams();
+    }
+});

@@ -403,6 +403,186 @@ app.delete('/events/:id', async (req, res) => {
   }
 });
 
+// ============================================
+// LIVESTREAM ROUTES
+// ============================================
+
+// Get all active livestreams
+app.get('/livestreams', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('livestreams')
+      .select('*, users(username, name, profile_picture)')
+      .eq('is_live', true)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching livestreams:', error);
+      return res.status(500).send('Error fetching livestreams');
+    }
+    
+    res.json(data || []);
+  } catch (err) {
+    console.error('Error in /livestreams get:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Get specific livestream
+app.get('/livestreams/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const { data, error } = await supabase
+      .from('livestreams')
+      .select('*, users(username, name, profile_picture)')
+      .eq('id', id)
+      .single();
+    
+    if (error || !data) {
+      return res.status(404).send('Livestream not found');
+    }
+    
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching livestream:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Create new livestream
+app.post('/livestreams', async (req, res) => {
+  try {
+    const { user_id, title, description, category, room_name } = req.body;
+
+    if (!user_id || !title) {
+      return res.status(400).send('Missing required fields');
+    }
+
+    const { data, error } = await supabase
+      .from('livestreams')
+      .insert([{
+        user_id,
+        title,
+        description,
+        category,
+        room_name,
+        is_live: true,
+        viewer_count: 0
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error inserting livestream:', error);
+      return res.status(500).send('Error creating livestream');
+    }
+
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Error in /livestreams post:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// End livestream
+app.delete('/livestreams/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    console.log(`Ending livestream with id: ${id}`);
+    
+    const { data, error } = await supabase
+      .from('livestreams')
+      .update({ is_live: false, ended_at: new Date().toISOString() })
+      .eq('id', id)
+      .select();
+    
+    if (error) {
+      console.error('Error ending livestream:', error);
+      return res.status(500).send('Error ending livestream');
+    }
+    
+    console.log('Livestream ended successfully:', data);
+    res.json({ message: 'Livestream ended successfully' });
+  } catch (err) {
+    console.error('Error ending livestream:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Update viewer count
+app.patch('/livestreams/:id/viewers', async (req, res) => {
+  const { id } = req.params;
+  const { count } = req.body;
+  
+  try {
+    const { error } = await supabase
+      .from('livestreams')
+      .update({ viewer_count: count })
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating viewer count:', error);
+      return res.status(500).send('Error updating viewer count');
+    }
+    
+    res.json({ message: 'Viewer count updated' });
+  } catch (err) {
+    console.error('Error updating viewer count:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Clean up old livestreams (mark streams older than 1 hour as ended)
+async function cleanupOldStreams() {
+  try {
+    const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
+    
+    const { data, error } = await supabase
+      .from('livestreams')
+      .update({ is_live: false, ended_at: new Date().toISOString() })
+      .eq('is_live', true)
+      .lt('created_at', oneHourAgo)
+      .select();
+    
+    if (error) {
+      console.error('Error cleaning up old streams:', error);
+    } else if (data && data.length > 0) {
+      console.log(`Cleaned up ${data.length} old stream(s)`);
+    }
+  } catch (err) {
+    console.error('Error in cleanupOldStreams:', err);
+  }
+}
+
+// Manual endpoint to end all active streams (for cleanup)
+app.post('/livestreams/cleanup-all', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('livestreams')
+      .update({ is_live: false, ended_at: new Date().toISOString() })
+      .eq('is_live', true)
+      .select();
+    
+    if (error) {
+      console.error('Error cleaning up all streams:', error);
+      return res.status(500).send('Error cleaning up streams');
+    }
+    
+    res.json({ message: `Successfully ended ${data?.length || 0} stream(s)`, streams: data });
+  } catch (err) {
+    console.error('Error in cleanup-all endpoint:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Run cleanup on server start
+cleanupOldStreams();
+
+// Run cleanup every hour
+setInterval(cleanupOldStreams, 60 * 60 * 1000);
+
 // Start server
 const PORT = 4000;
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));

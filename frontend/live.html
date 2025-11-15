@@ -46,25 +46,56 @@
       overflow: hidden;
     }
     .sidebar {
-      background: #444;
-      padding: 10px;
+      background: #5a5a5a;
+      padding: 15px 10px;
       overflow-y: auto;
       height: 100%;
     }
     .sidebar h3 {
       margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: white;
+      font-weight: 600;
     }
     .sidebar .stream-item {
       display: flex;
       align-items: center;
-      margin: 10px 0;
+      margin: 0 0 15px 0;
+      padding: 0;
+      cursor: pointer;
+    }
+    .sidebar .stream-item .icon {
+      margin-right: 10px;
+      flex-shrink: 0;
     }
     .sidebar .stream-item .icon img{
-      width: 30px;
-      height: 30px;
-      background: black;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      margin-right: 10px;
+      object-fit: cover;
+    }
+    .sidebar .stream-item .stream-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .sidebar .stream-item .stream-info .username {
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .sidebar .stream-item .stream-info .stream-title {
+      color: #ccc;
+      font-size: 12px;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .main {
       background: #e0e0e0;
@@ -282,6 +313,161 @@
       if (e.key === "Enter") sendMessage();
     });
   </script>
+
+  <!-- Livestream Loading Script -->
+  <script>
+    const API_URL = 'http://localhost:4000';
+    const urlParams = new URLSearchParams(window.location.search);
+    const streamId = urlParams.get('stream');
+
+    // Load livestream data
+    async function loadLivestream() {
+      if (!streamId) {
+        console.log('No stream ID provided');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/livestreams/${streamId}`);
+        if (!response.ok) throw new Error('Stream not found');
+
+        const stream = await response.json();
+
+        // Update page with stream data
+        const streamTitle = document.querySelector('.stream-info h2');
+        if (streamTitle) streamTitle.textContent = stream.title;
+        
+        const streamUsername = document.querySelector('.stream-info p a');
+        if (streamUsername) streamUsername.textContent = stream.users?.username || 'Unknown';
+        
+        const descElement = document.querySelector('.stream-info p:last-child');
+        if (descElement) {
+          descElement.innerHTML = `<strong>Description</strong><br>${stream.description || 'No description'}`;
+        }
+
+        // Update profile picture
+        const profileImg = document.querySelector('.stream-info img');
+        if (profileImg && stream.users?.profile_picture) {
+          profileImg.src = stream.users.profile_picture;
+        }
+
+        // Note: In a real implementation, you would connect to the actual video stream here
+        // For now, the YouTube embed remains as a placeholder
+        console.log('Livestream loaded:', stream);
+
+      } catch (error) {
+        console.error('Error loading livestream:', error);
+        alert('This stream is no longer available.');
+      }
+    }
+
+    // Load active livestreams in sidebar
+    async function loadActiveLivestreams() {
+      try {
+        const response = await fetch(`${API_URL}/livestreams`);
+        const streams = await response.json();
+
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.innerHTML = '<h3>Streaming Now</h3>';
+
+        if (streams.length === 0) {
+          sidebar.innerHTML += '<p style="color: #ccc; text-align: center; font-size: 14px;">No active streams</p>';
+          return;
+        }
+
+        streams.forEach(stream => {
+          const isCurrentStream = stream.id === streamId;
+          const streamItem = document.createElement('div');
+          streamItem.className = 'stream-item';
+
+          streamItem.innerHTML = `
+            <div class="icon">
+              <a href="profile.html?user=${stream.user_id}">
+                <img src="${stream.users?.profile_picture || 'https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg'}">
+              </a>
+            </div>
+            <div class="stream-info">
+              <a href="live.html?stream=${stream.id}" class="username">
+                ${stream.users?.username || 'Unknown'}
+              </a>
+              <span class="stream-title">${stream.title}</span>
+            </div>
+          `;
+          
+          // Highlight current stream
+          if (isCurrentStream) {
+            streamItem.querySelector('.username').style.color = '#afd5eb';
+            streamItem.querySelector('.username').style.fontWeight = '700';
+          }
+          
+          sidebar.appendChild(streamItem);
+        });
+
+      } catch (error) {
+            streamItem.style.background = 'rgba(74, 158, 255, 0.2)';
+            streamItem.style.border = '2px solid #4a9eff';
+          }
+
+          // Add hover effect
+          streamItem.addEventListener('mouseenter', () => {
+            if (!isCurrentStream) {
+              streamItem.style.background = 'rgba(255, 255, 255, 0.1)';
+            }
+          });
+          streamItem.addEventListener('mouseleave', () => {
+            if (!isCurrentStream) {
+              streamItem.style.background = 'transparent';
+            }
+          });
+
+          streamItem.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="icon">
+                <a href="profile.html?user=${stream.user_id}">
+                  <img src="${stream.users?.profile_picture || 'https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg'}" 
+                       style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                </a>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <a href="live.html?stream=${stream.id}" 
+                   style="color: ${isCurrentStream ? '#4a9eff' : 'white'}; 
+                          text-decoration: none; 
+                          font-weight: ${isCurrentStream ? 'bold' : 'normal'};
+                          display: block;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                          white-space: nowrap;">
+                  ${stream.users?.username || 'Unknown'}
+                  ${isCurrentStream ? ' (Watching)' : ''}
+                </a>
+                <small style="color: #ccc; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${stream.title}
+                </small>
+                <small style="color: #888;">
+                  <span style="color: red;">�</span> ${stream.viewer_count || 0} viewers
+                </small>
+              </div>
+            </div>
+          `;
+          
+          sidebar.appendChild(streamItem);
+        });
+
+      } catch (error) {
+        console.error('Error loading livestreams:', error);
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.innerHTML = '<h3 style="color: white;">Streaming Now</h3><p style="color: #888; padding: 10px;">Unable to load streams</p>';
+      }
+    }
+
+    // Initialize
+    loadLivestream();
+    loadActiveLivestreams();
+
+    // Refresh active streams every 30 seconds
+    setInterval(loadActiveLivestreams, 30000);
+  </script>
+
   <script src="navbar.js"></script>
 </body>
 </html>
