@@ -609,9 +609,22 @@ async function loadLiveStreams() {
         liveList.innerHTML = '';
 
         if (streams.length === 0) {
-            liveList.innerHTML = '<p class="text-center" style="color: #888;">No one is live right now</p>';
+            // Remove grid classes and add flex centering for empty state
+            liveList.classList.remove('live-grid');
+            liveList.style.display = 'flex';
+            liveList.style.justifyContent = 'center';
+            liveList.style.alignItems = 'center';
+            liveList.style.minHeight = '300px';
+            liveList.innerHTML = '<p style="color: #888; text-align: center; font-size: 18px;">No one is live right now</p>';
             return;
         }
+
+        // Restore grid layout when there are streams
+        liveList.classList.add('live-grid');
+        liveList.style.display = '';
+        liveList.style.justifyContent = '';
+        liveList.style.alignItems = '';
+        liveList.style.minHeight = '';
 
         streams.forEach(stream => {
             const card = document.createElement('div');
@@ -645,7 +658,12 @@ async function loadLiveStreams() {
         console.error('Error loading livestreams:', error);
         const liveList = document.getElementById('liveList');
         if (liveList) {
-            liveList.innerHTML = '<p class="text-center" style="color: #888;">Unable to load streams</p>';
+            liveList.classList.remove('live-grid');
+            liveList.style.display = 'flex';
+            liveList.style.justifyContent = 'center';
+            liveList.style.alignItems = 'center';
+            liveList.style.minHeight = '300px';
+            liveList.innerHTML = '<p style="color: #888; text-align: center; font-size: 18px;">Unable to load streams</p>';
         }
     }
 }
