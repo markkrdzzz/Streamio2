@@ -282,23 +282,71 @@
     }
 
     // Initialize
-    async function init() {
-      document.getElementById('streamTitle').textContent = streamData.title || 'Untitled Stream';
-      document.getElementById('streamDescription').textContent = streamData.description || '';
+async function init() {
+  document.getElementById('streamTitle').textContent = streamData.title || 'Untitled Stream';
+  document.getElementById('streamDescription').textContent = streamData.description || '';
 
-      // Request camera and mic access
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { width: 1280, height: 720 }, 
-          audio: true 
-        });
-        document.getElementById('localVideo').srcObject = localStream;
-        console.log('Camera and microphone access granted');
-      } catch (error) {
-        console.error('Error accessing media devices:', error);
-        alert('Could not access camera or microphone. Please grant permissions and refresh the page.');
+  // Check if returning to an existing stream
+  const userId = user.id || user.user_id;
+  try {
+    const response = await fetch(`${API_URL}/livestreams?user_id=${userId}`);
+    if (response.ok) {
+      const streams = await response.json();
+      const existingStream = streams.find(s => s.user_id === userId);
+      
+      if (existingStream) {
+        // User has an active stream - reconnect to it
+        streamId = existingStream.id;
+        isLive = true;
+        
+        // Calculate how long stream has been running
+        if (existingStream.created_at) {
+          startTime = new Date(existingStream.created_at).getTime();
+          durationInterval = setInterval(updateDuration, 1000);
+          updateDuration(); // Update immediately
+        }
+        
+        // Update UI to show live state
+        document.getElementById('streamStatus').textContent = '🔴 LIVE';
+        document.getElementById('streamStatus').className = 'status-indicator status-live';
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('sendChatBtn').disabled = false;
+        
+        // Update stream info
+        document.getElementById('streamTitle').textContent = existingStream.title;
+        document.getElementById('streamDescription').textContent = existingStream.description || '';
+        
+        const username = user.username || user.name || 'User';
+        document.getElementById('navbarTitle').textContent = `${username}'s Live`;
+        
+        const streamLink = `${window.location.origin}/live.html?stream=${streamId}`;
+        document.getElementById('streamLink').href = streamLink;
+        document.getElementById('streamLink').textContent = streamLink;
+        
+        addChatMessage('System', 'Reconnected to your stream! 🎉', true);
+        
+        console.log('Reconnected to existing stream:', streamId);
       }
     }
+  } catch (error) {
+    console.error('Error checking for existing stream:', error);
+  }
+
+  // Request camera and mic access
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ 
+      video: { width: 1280, height: 720 }, 
+      audio: true 
+    });
+    document.getElementById('localVideo').srcObject = localStream;
+    console.log('Camera and microphone access granted');
+  } catch (error) {
+    console.error('Error accessing media devices:', error);
+    alert('Could not access camera or microphone. Please grant permissions and refresh the page.');
+  }
+}
 
     // Start streaming
     document.getElementById('startBtn').addEventListener('click', async () => {
