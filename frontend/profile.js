@@ -28,6 +28,23 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeProfilePage();
 });
 
+async function checkUserActiveStream() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = user.id || user.user_id;
+  if (!userId) return false;
+
+  try {
+    const response = await fetch(`http://localhost:4000/livestreams?user_id=${userId}`);
+    if (!response.ok) return false;
+    
+    const streams = await response.json();
+    return streams.some(s => s.user_id === userId);
+  } catch (error) {
+    console.error('Error checking active stream:', error);
+    return false;
+  }
+}
+
 async function loadProfileData(username, loggedInUsername) {
   // Hide/show the "Edit" button based on whether it's own profile
   const changePfpBtn = document.getElementById('changePfpBtn');
@@ -353,20 +370,62 @@ function initializeProfilePage() {
   }
 
   function filterContent(category) {
+    // Get fresh reference to button each time
+    const liveBtn = document.getElementById('createLiveBtn');
+    
     // Hide all pages by default
     if (aboutPage) aboutPage.style.display = 'none';
     if (livePage) livePage.style.display = 'none';
-    if (createLiveBtn) createLiveBtn.style.display = 'none';
+    
+    // ALWAYS hide the button first
+    if (liveBtn) liveBtn.style.display = 'none';
 
     // Show selected page and handle button visibility
     if (category === 'about') {
       if (aboutPage) aboutPage.style.display = 'block';
+      // Button stays hidden - already set above
     } 
     else if (category === 'live') {
       if (livePage) livePage.style.display = 'block';
-      // Only show Create Live button if viewing own profile
-      if (isOwnProfile && createLiveBtn) {
-        createLiveBtn.style.display = 'block';
+      
+      // Check if user has an active stream
+      if (isOwnProfile && liveBtn) {
+        checkUserActiveStream().then(hasActiveStream => {
+          // Get fresh reference again in case it was replaced
+          const btn = document.getElementById('createLiveBtn');
+          if (!btn) return;
+          
+          if (hasActiveStream) {
+            // Show "Return to Stream" button
+            btn.textContent = '🔴 Return to Active Stream';
+            btn.style.display = 'block';
+            btn.style.backgroundColor = '#ff0000';
+            btn.style.animation = 'pulse 2s infinite';
+            
+            // Remove modal attributes
+            btn.removeAttribute('data-bs-toggle');
+            btn.removeAttribute('data-bs-target');
+            
+            // Set onclick directly (don't clone)
+            btn.onclick = (e) => {
+              e.preventDefault();
+              window.location.href = 'broadcast.html';
+            };
+          } else {
+            // Show "Create Live" button
+            btn.textContent = 'Create Live';
+            btn.style.display = 'block';
+            btn.style.backgroundColor = '';
+            btn.style.animation = '';
+            
+            // Restore modal attributes
+            btn.setAttribute('data-bs-toggle', 'modal');
+            btn.setAttribute('data-bs-target', '#createLiveModal');
+            
+            // Remove onclick handler
+            btn.onclick = null;
+          }
+        });
       }
     }
   }
@@ -855,4 +914,138 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = 'broadcast.html';
     });
   }
+});
+
+// Add this function to profile.js
+async function loadUserClubsForLiveStream() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = user.id || user.user_id;
+  if (!userId) return;
+
+  try {
+    const response = await fetch(`http://localhost:4000/clubs?created_by=${userId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch clubs');
+    }
+
+    const clubs = await response.json();
+    
+    // Get the club dropdown in the live stream modal
+    const clubSelect = document.getElementById('liveClub');
+    if (!clubSelect) {
+      console.error('liveClub dropdown not found');
+      return;
+    }
+
+    // Clear existing options except the first one (No Club)
+    clubSelect.innerHTML = '<option value="">Select a club</option>';
+
+    // Add user's clubs
+    if (clubs.length === 0) {
+      const noClubsOption = document.createElement('option');
+      noClubsOption.disabled = true;
+      noClubsOption.textContent = '-- You haven\'t created any clubs yet --';
+      clubSelect.appendChild(noClubsOption);
+    } else {
+      clubs.forEach(club => {
+        const option = document.createElement('option');
+        option.value = club.club_id;
+        option.textContent = club.club_name;
+        clubSelect.appendChild(option);
+      });
+    }
+
+  } catch (error) {
+    console.error('Error loading clubs for livestream:', error);
+  }
+}
+
+// Add category change handler to show/hide club dropdown
+document.addEventListener('DOMContentLoaded', () => {
+  const categorySelect = document.getElementById('liveCategory');
+  const clubContainer = document.getElementById('liveClubContainer');
+  const clubSelect = document.getElementById('liveClub');
+
+  if (categorySelect && clubContainer) {
+    // Initially hide club dropdown
+    clubContainer.style.display = 'none';
+
+    // Listen for category changes
+    categorySelect.addEventListener('change', () => {
+      if (categorySelect.value === 'Clubs') {
+        // Show club dropdown and load clubs
+        clubContainer.style.display = 'block';
+        clubSelect.setAttribute('required', 'required');
+        loadUserClubsForLiveStream();
+      } else {
+        // Hide club dropdown and remove required
+        clubContainer.style.display = 'none';
+        clubSelect.removeAttribute('required');
+        clubSelect.value = ''; // Clear selection
+      }
+    });
+  }
+
+  // Load clubs when modal opens (if Clubs category is pre-selected)
+  const createLiveModalElement = document.getElementById('createLiveModal');
+  if (createLiveModalElement) {
+    createLiveModalElement.addEventListener('show.bs.modal', () => {
+      // Reset form
+      if (categorySelect) categorySelect.value = '';
+      if (clubContainer) clubContainer.style.display = 'none';
+      if (clubSelect) {
+        clubSelect.removeAttribute('required');
+        clubSelect.value = '';
+      }
+    });
+  }
+});
+
+// Update the existing live form submission to include club_id
+document.addEventListener('DOMContentLoaded', () => {
+  const liveForm = document.getElementById('live-creation-form');
+  const createLiveModal = document.getElementById('createLiveModal');
+
+  if (!liveForm) return;
+
+  // Create live
+  liveForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('liveTitle').value.trim();
+    const category = document.getElementById('liveCategory').value;
+    const description = document.getElementById('liveDescription').value.trim();
+    const clubId = document.getElementById('liveClub')?.value || null;
+
+    if (!title || !category || !description) {
+      alert('Please fill out all fields.');
+      return;
+    }
+
+    // If category is "Clubs", club selection is required
+    if (category === 'Clubs' && !clubId) {
+      alert('Please select a club for this stream.');
+      return;
+    }
+
+    // Create live data object
+    const liveData = {
+      title,
+      category,
+      description,
+      club_id: clubId,
+      time: new Date().toLocaleString()
+    };
+
+    // Save to localStorage (so broadcast.html can access it)
+    localStorage.setItem('pendingStream', JSON.stringify(liveData));
+
+    // Close the modal
+    const modalInstance = bootstrap.Modal.getInstance(createLiveModal);
+    modalInstance.hide();
+
+    // Redirect to broadcast page
+    window.location.href = 'broadcast.html';
+  });
 });

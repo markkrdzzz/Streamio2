@@ -151,50 +151,63 @@
       
 
        <div id="livePage" class="live-page" style="display: none;">
-         <div class="modal fade" id="createLiveModal" tabindex="-1" aria-labelledby="createLiveModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content" style="background-color: #353434; color:white;">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="createLiveModalLabel">Start New Live Stream</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    
-                        <div class="modal-body">
-                            <form id="live-creation-form">
-                                
-                                <div class="mb-3">
-                                    <label for="liveTitle" class="form-label">Stream Title</label>
-                                    <input type="text" class="form-control" id="liveTitle" placeholder="" required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="liveCategory" class="form-label">Category</label>
-                                    <select class="form-select" id="liveCategory" required>
-                                        <option value="">Select a category</option>
-                                        <option value="sports">Clubs</option>
-                                        <option value="academics">School</option>
-                                        <option value="gaming">People</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="liveDescription" class="form-label">Description</label>
-                                    <textarea class="form-control" id="liveDescription" rows="3" placeholder="Tell viewers what your stream is about." required></textarea>
-                                </div>
-                            </form>
-                        </div>
-                    
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-danger custom-button" form="live-creation-form">Go Live</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          <div class="modal fade" id="createLiveModal" tabindex="-1" aria-labelledby="createLiveModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                  <div class="modal-content" style="background-color: #353434; color:white;">
+                      <div class="modal-header">
+                          <h5 class="modal-title" id="createLiveModalLabel">Start New Live Stream</h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      
+                      <div class="modal-body">
+                          <form id="live-creation-form">
+                              
+                              <div class="mb-3">
+                                  <label for="liveTitle" class="form-label">Stream Title</label>
+                                  <input type="text" class="form-control" id="liveTitle" placeholder="" required>
+                              </div>
+                              
+                              <div class="mb-3">
+                                  <label for="liveCategory" class="form-label">Category</label>
+                                  <select class="form-select" id="liveCategory" required>
+                                      <option value="">Select a category</option>
+                                      <option value="Clubs">Clubs</option>
+                                      <option value="School">School</option>
+                                      <option value="People">People</option>
+                                      <option value="Gaming">Gaming</option>
+                                      <option value="Sports">Sports</option>
+                                      <option value="Other">Other</option>
+                                  </select>
+                              </div>
+
+                              <!-- Club Selection - Only shows when "Clubs" category is selected -->
+                              <div class="mb-3" id="liveClubContainer" style="display: none;">
+                                  <label for="liveClub" class="form-label">Select Your Club</label>
+                                  <select class="form-select" id="liveClub">
+                                      <option value="">Select a club</option>
+                                      <!-- Options will be populated dynamically -->
+                                  </select>
+                              </div>
+                              
+                              <div class="mb-3">
+                                  <label for="liveDescription" class="form-label">Description</label>
+                                  <textarea class="form-control" id="liveDescription" rows="3" placeholder="Tell viewers what your stream is about." required></textarea>
+                              </div>
+                          </form>
+                      </div>
+                  
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-danger custom-button" form="live-creation-form">Go Live</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
         </div>
     </main>
     <script src="index.js"></script>
     <script src="navbar.js"></script>
     <script src="profile.js"></script>
+    <script src="stream.js"></script>
   </body>
 </html>
