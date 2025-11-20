@@ -989,3 +989,25 @@ h1 {
 }
 
 /* Live styling */
+#liveList {
+  grid-column: 1 / -1; /* Spans all columns of parent grid */
+  width: 100%;
+}
+
+/* When live-grid has a paragraph (empty state), center it */
+.live-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 250px);
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+}
+
+/* Make sure empty message spans all columns and is centered */
+.live-grid > p {
+  grid-column: 1 / -1;
+  text-align: center !important;
+  width: 100%;
+  margin: 40px auto;
+}
