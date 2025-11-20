@@ -376,42 +376,23 @@
         }
 
         streams.forEach(stream => {
-          const isCurrentStream = stream.id === streamId;
+          const isCurrentStream = stream.id === parseInt(streamId);
           const streamItem = document.createElement('div');
           streamItem.className = 'stream-item';
 
-          streamItem.innerHTML = `
-            <div class="icon">
-              <a href="profile.html?user=${stream.user_id}">
-                <img src="${stream.users?.profile_picture || 'https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg'}">
-              </a>
-            </div>
-            <div class="stream-info">
-              <a href="live.html?stream=${stream.id}" class="username">
-                ${stream.users?.username || 'Unknown'}
-              </a>
-              <span class="stream-title">${stream.title}</span>
-            </div>
-          `;
-          
           // Highlight current stream
           if (isCurrentStream) {
-            streamItem.querySelector('.username').style.color = '#afd5eb';
-            streamItem.querySelector('.username').style.fontWeight = '700';
-          }
-          
-          sidebar.appendChild(streamItem);
-        });
-
-      } catch (error) {
             streamItem.style.background = 'rgba(74, 158, 255, 0.2)';
             streamItem.style.border = '2px solid #4a9eff';
+            streamItem.style.borderRadius = '8px';
+            streamItem.style.padding = '8px';
           }
 
           // Add hover effect
           streamItem.addEventListener('mouseenter', () => {
             if (!isCurrentStream) {
               streamItem.style.background = 'rgba(255, 255, 255, 0.1)';
+              streamItem.style.borderRadius = '8px';
             }
           });
           streamItem.addEventListener('mouseleave', () => {
@@ -425,12 +406,12 @@
               <div class="icon">
                 <a href="profile.html?user=${stream.user_id}">
                   <img src="${stream.users?.profile_picture || 'https://www.utrgv.edu/tutoring/_files/images/staff/no-pic.jpg'}" 
-                       style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                      style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                 </a>
               </div>
               <div style="flex: 1; min-width: 0;">
                 <a href="live.html?stream=${stream.id}" 
-                   style="color: ${isCurrentStream ? '#4a9eff' : 'white'}; 
+                  style="color: ${isCurrentStream ? '#4a9eff' : 'white'}; 
                           text-decoration: none; 
                           font-weight: ${isCurrentStream ? 'bold' : 'normal'};
                           display: block;
@@ -444,7 +425,7 @@
                   ${stream.title}
                 </small>
                 <small style="color: #888;">
-                  <span style="color: red;">�</span> ${stream.viewer_count || 0} viewers
+                  <span style="color: red;">🔴</span> ${stream.viewer_count || 0} viewers
                 </small>
               </div>
             </div>
