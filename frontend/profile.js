@@ -624,7 +624,7 @@ function openEditClubModal(club) {
   }
   
   // Populate form with club data
-  document.getElementById('editClubId').value = club.club_id;
+  document.getElementById('editClubId').value = club.id;
   document.getElementById('editClubName').value = club.club_name;
   document.getElementById('editClubCategory').value = club.category || '';
   document.getElementById('editClubDescription').value = club.description || '';
