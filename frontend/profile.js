@@ -644,6 +644,12 @@ async function updateClub(clubId, updatedData) {
     });
 
     if (!response.ok) {
+      // Check if it's a duplicate name error
+      if (response.status === 409) {
+        const errorData = await response.json();
+        alert(errorData.message || 'A club with this name already exists. Please choose a different name.');
+        return;
+      }
       throw new Error('Failed to update club');
     }
 
@@ -708,7 +714,7 @@ async function deleteClub(clubId) {
 
 
 // Edit/delete event functions
-function openEditEventModal(event) {
+async function openEditEventModal(event) {
   // Create modal HTML if it doesn't exist
   let modal = document.getElementById('editEventModal');
   if (!modal) {
@@ -736,21 +742,29 @@ function openEditEventModal(event) {
                   <input type="text" class="form-control" id="editEventLocation" required>
                 </div>
                 <div class="mb-3">
-                  <label for="editEventCategory" class="form-label">Category</label>
-                  <select class="form-select" id="editEventCategory">
-                    <option value="">Select a category</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Academics">Academics</option>
-                    <option value="Gaming">Gaming</option>
-                    <option value="Arts">Arts</option>
-                    <option value="Technology">Technology</option>
-                    <option value="Social">Social</option>
-                    <option value="Other">Other</option>
+                  <label for="editEventClub" class="form-label">Club (Optional)</label>
+                  <select class="form-select" id="editEventClub">
+                    <option value="">Personal Event (No Club)</option>
                   </select>
                 </div>
-                <div class="mb-3">
-                  <label for="editEventOrganizer" class="form-label">Organizer</label>
-                  <input type="text" class="form-control" id="editEventOrganizer">
+                <div id="editPersonalEventFields">
+                  <div class="mb-3">
+                    <label for="editEventCategory" class="form-label">Category</label>
+                    <select class="form-select" id="editEventCategory">
+                      <option value="">Select a category</option>
+                      <option value="Sports">Sports</option>
+                      <option value="Academics">Academics</option>
+                      <option value="Gaming">Gaming</option>
+                      <option value="Arts">Arts</option>
+                      <option value="Technology">Technology</option>
+                      <option value="Social">Social</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="editEventOrganizer" class="form-label">Organizer</label>
+                    <input type="text" class="form-control" id="editEventOrganizer">
+                  </div>
                 </div>
                 <div class="mb-3">
                   <label for="editEventDescription" class="form-label">Description</label>
@@ -769,16 +783,28 @@ function openEditEventModal(event) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     modal = document.getElementById('editEventModal');
     
+    // Add club dropdown change handler
+    const editEventClubSelect = document.getElementById('editEventClub');
+    const editPersonalEventFields = document.getElementById('editPersonalEventFields');
+    if (editEventClubSelect && editPersonalEventFields) {
+      editEventClubSelect.addEventListener('change', () => {
+        const hasClub = editEventClubSelect.value !== '';
+        editPersonalEventFields.style.display = hasClub ? 'none' : 'block';
+      });
+    }
+    
     // Add form submit handler
     document.getElementById('edit-event-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const eventId = document.getElementById('editEventId').value;
       const location = document.getElementById('editEventLocation').value.trim();
       const description = document.getElementById('editEventDescription').value.trim();
+      const clubId = document.getElementById('editEventClub')?.value || null;
       
       const updatedData = {
         event_name: document.getElementById('editEventName').value,
         time: document.getElementById('editEventTime').value,
+        club_id: clubId,
         category: document.getElementById('editEventCategory').value || null,
         organizer: document.getElementById('editEventOrganizer').value || null,
         description: (location ? location + '\n\n' : '') + (description || '')
@@ -786,6 +812,35 @@ function openEditEventModal(event) {
       await updateEvent(eventId, updatedData);
     });
   }
+  
+  // Load clubs into dropdown
+  async function loadEditClubsDropdown() {
+    try {
+      const response = await fetch('http://localhost:4000/clubs');
+      const clubs = await response.json();
+      
+      const editEventClubSelect = document.getElementById('editEventClub');
+      if (!editEventClubSelect) return;
+      
+      // Clear existing options except the first one (Personal Event)
+      while (editEventClubSelect.options.length > 1) {
+        editEventClubSelect.remove(1);
+      }
+      
+      // Add clubs from database
+      clubs.forEach(club => {
+        const option = document.createElement('option');
+        option.value = club.id;
+        option.textContent = club.club_name;
+        editEventClubSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error loading clubs for edit dropdown:', error);
+    }
+  }
+  
+  // Load clubs before populating form
+  await loadEditClubsDropdown();
   
   // Parse location from description
   let location = '';
@@ -810,9 +865,16 @@ function openEditEventModal(event) {
   }
   
   document.getElementById('editEventLocation').value = location;
+  document.getElementById('editEventClub').value = event.club_id || '';
   document.getElementById('editEventCategory').value = event.category || '';
   document.getElementById('editEventOrganizer').value = event.organizer || '';
   document.getElementById('editEventDescription').value = description;
+  
+  // Show/hide personal event fields based on club selection
+  const editPersonalEventFields = document.getElementById('editPersonalEventFields');
+  if (editPersonalEventFields) {
+    editPersonalEventFields.style.display = event.club_id ? 'none' : 'block';
+  }
   
   // Show modal
   const bsModal = new bootstrap.Modal(modal);

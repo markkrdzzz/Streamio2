@@ -52,6 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Shows the videos of the selected category OR shows events page
     function filterContent(category) {
         const mainCategory = category || 'all';
+        const liveList = document.getElementById('liveList');
+        const clubsList = document.getElementById('clubsList');
 
         if (category === 'events') {
             // Hide videos, show events
@@ -63,37 +65,60 @@ document.addEventListener('DOMContentLoaded', () => {
             if (filterButton) filterButton.style.display = 'block';
             if (filterOptions) filterOptions.classList.remove('active');
         } else if (category === 'clubs') {
-            // Show videos, hide events, show create club button
-            videoResults.style.display = 'grid';
+            // Show clubs list, hide events and live streams
+            videoResults.style.display = 'flex';
+            videoResults.style.justifyContent = 'center';
             eventsPage.style.display = 'none';
+            if (liveList) {
+                liveList.style.display = 'none';
+                liveList.style.visibility = 'hidden';
+                liveList.style.position = 'absolute';
+                liveList.style.opacity = '0';
+                liveList.innerHTML = ''; // Clear any content including "no one is live" message
+            }
+            if (clubsList) {
+                clubsList.style.display = 'grid';
+                clubsList.style.visibility = 'visible';
+                clubsList.style.position = 'relative';
+                clubsList.style.opacity = '1';
+                clubsList.style.width = '100%';
+            }
             if (createClubBtn) createClubBtn.style.display = isLoggedIn ? 'block' : 'none';
             if (createEventBtn) createEventBtn.style.display = 'none';
             if (eventsTitle) eventsTitle.style.display = 'none';
             if (filterButton) filterButton.style.display = 'none';
             if (filterOptions) filterOptions.classList.remove('active');
             
-            // Filter videos by category
-            videos.forEach(video => {
-                const videoCategory = video.getAttribute('data-category');
-                video.style.display = (videoCategory === 'clubs') ? 'flex' : 'none';
-            });
+            // Load clubs
+            loadClubs();
         } else if (category === 'all') {
-            // Show videos, hide events and create club button, show filter
+            // Show live streams, hide clubs and events
             videoResults.style.display = 'grid';
+            videoResults.style.justifyContent = '';
             eventsPage.style.display = 'none';
+            if (liveList) {
+                liveList.style.display = 'grid';
+                liveList.style.visibility = 'visible';
+                liveList.style.position = 'relative';
+                liveList.style.opacity = '1';
+                loadLiveStreams(); // Reload live streams
+            }
+            if (clubsList) {
+                clubsList.style.display = 'none';
+                clubsList.style.visibility = 'hidden';
+                clubsList.style.position = 'absolute';
+                clubsList.style.opacity = '0';
+            }
             if (createClubBtn) createClubBtn.style.display = 'none';
             if (createEventBtn) createEventBtn.style.display = 'none';
             if (eventsTitle) eventsTitle.style.display = 'none';
             if (filterButton) filterButton.style.display = 'block';
-            
-            // Show all videos
-            videos.forEach(video => {
-                video.style.display = 'flex';
-            });
         } else {
             // Show videos, hide events and create club button, hide filter
             videoResults.style.display = 'grid';
             eventsPage.style.display = 'none';
+            if (liveList) liveList.style.display = 'none';
+            if (clubsList) clubsList.style.display = 'none';
             if (createClubBtn) createClubBtn.style.display = 'none';
             if (createEventBtn) createEventBtn.style.display = 'none';
             if (eventsTitle) eventsTitle.style.display = 'none';
@@ -465,6 +490,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Wire up form
     document.addEventListener('DOMContentLoaded', () => {
+        // Load clubs into dropdown
+        async function loadClubsDropdown() {
+            try {
+                const response = await fetch('http://localhost:4000/clubs');
+                const clubs = await response.json();
+                
+                const eventClubSelect = document.getElementById('eventClub');
+                if (!eventClubSelect) return;
+                
+                // Clear existing options except the first one (Personal Event)
+                while (eventClubSelect.options.length > 1) {
+                    eventClubSelect.remove(1);
+                }
+                
+                // Add clubs from database
+                clubs.forEach(club => {
+                    const option = document.createElement('option');
+                    option.value = club.id;
+                    option.textContent = club.club_name;
+                    eventClubSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading clubs for dropdown:', error);
+            }
+        }
+        
+        // Load clubs when page loads
+        loadClubsDropdown();
+        
         const form = document.getElementById('event-creation-form');
         if (!form) return;
 
@@ -567,6 +621,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     if (!response.ok) {
+                        // Check if it's a duplicate name error
+                        if (response.status === 409) {
+                            const errorData = await response.json();
+                            alert(errorData.message || 'A club with this name already exists. Please choose a different name.');
+                            return;
+                        }
                         throw new Error('Failed to create club');
                     }
 
@@ -583,6 +643,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Reset form
                     clubForm.reset();
+                    
+                    // Reload clubs list if we're on the clubs page
+                    const activeTab = document.querySelector('.option-item.active');
+                    if (activeTab && activeTab.getAttribute('data-category') === 'clubs') {
+                        loadClubs();
+                    }
                     
                     alert('Club created successfully!');
                 } catch (error) {
@@ -664,6 +730,84 @@ async function loadLiveStreams() {
             liveList.style.alignItems = 'center';
             liveList.style.minHeight = '300px';
             liveList.innerHTML = '<p style="color: #888; text-align: center; font-size: 18px;">Unable to load streams</p>';
+        }
+    }
+}
+
+// ============================================
+// LOAD CLUBS ON HOMEPAGE
+// ============================================
+
+async function loadClubs() {
+    try {
+        const response = await fetch('http://localhost:4000/clubs');
+        const clubs = await response.json();
+
+        const clubsList = document.getElementById('clubsList');
+        if (!clubsList) return;
+
+        clubsList.innerHTML = '';
+
+        if (clubs.length === 0) {
+            // Remove grid classes and add flex centering for empty state
+            clubsList.classList.remove('live-grid');
+            clubsList.style.display = 'flex';
+            clubsList.style.justifyContent = 'center';
+            clubsList.style.alignItems = 'center';
+            clubsList.style.minHeight = '300px';
+            clubsList.innerHTML = '<p style="color: #888; text-align: center; font-size: 18px;">No clubs available yet</p>';
+            return;
+        }
+
+        // Restore grid layout when there are clubs
+        clubsList.classList.add('live-grid');
+        clubsList.style.display = '';
+        clubsList.style.justifyContent = '';
+        clubsList.style.alignItems = '';
+        clubsList.style.minHeight = '';
+
+        clubs.forEach(club => {
+            const card = document.createElement('div');
+            card.className = 'video-placeholder';
+            card.style.cursor = 'pointer';
+            
+            // Generate a subtle dark gradient for minimalistic look
+            const gradients = [
+                'linear-gradient(135deg, #434343 0%, #000000 100%)',
+                'linear-gradient(135deg, #4b4b4b 0%, #1a1a1a 100%)',
+                'linear-gradient(135deg, #3e3e3e 0%, #0d0d0d 100%)',
+                'linear-gradient(135deg, #525252 0%, #151515 100%)'
+            ];
+            const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+            
+            card.innerHTML = `
+                <div class="thumbnail-block" style="position: relative; background: ${randomGradient}; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center; color: rgba(255, 255, 255, 0.4); font-size: 14px; font-weight: 300; letter-spacing: 1px;">
+                        NO LOGO
+                    </div>
+                </div>
+                <div class="video-info">
+                    <div style="flex: 1;">
+                        <div class="title-block" style="color: #afd5eb; font-weight: 600;">${club.club_name}</div>
+                        <span class="video-filter-tag">${club.category || 'General'}</span>
+                        ${club.description ? `<p style="color: #888; font-size: 12px; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${club.description}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            clubsList.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error('Error loading clubs:', error);
+        const clubsList = document.getElementById('clubsList');
+        if (clubsList) {
+            clubsList.classList.remove('live-grid');
+            clubsList.style.display = 'flex';
+            clubsList.style.justifyContent = 'center';
+            clubsList.style.alignItems = 'center';
+            clubsList.style.minHeight = '300px';
+            clubsList.innerHTML = '<p style="color: #888; text-align: center; font-size: 18px;">Unable to load clubs</p>';
         }
     }
 }

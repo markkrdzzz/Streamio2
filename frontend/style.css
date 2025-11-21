@@ -994,6 +994,12 @@ h1 {
   width: 100%;
 }
 
+/* Clubs styling */
+#clubsList {
+  grid-column: 1 / -1; /* Spans all columns of parent grid */
+  width: 100%;
+}
+
 /* When live-grid has a paragraph (empty state), center it */
 .live-grid {
   display: grid;

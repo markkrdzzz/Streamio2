@@ -238,6 +238,23 @@ app.post('/clubs', async (req, res) => {
       return res.status(400).send('Missing club_name');
     }
 
+    // Check if club name already exists (case-insensitive)
+    const { data: existingClubs, error: checkError } = await supabase
+      .from('clubs')
+      .select('id, club_name')
+      .ilike('club_name', payload.club_name);
+
+    if (checkError) {
+      console.error('Error checking for duplicate club name:', checkError);
+    }
+
+    if (existingClubs && existingClubs.length > 0) {
+      return res.status(409).json({ 
+        error: 'Club name already exists',
+        message: 'A club with this name already exists. Please choose a different name.'
+      });
+    }
+
     const { data, error } = await supabase
       .from('clubs')
       .insert([payload])
@@ -285,6 +302,26 @@ app.put('/clubs/:id', async (req, res) => {
   const { club_name, category, description, contact_email } = req.body;
   
   try {
+    // If updating club name, check if the new name already exists (excluding current club)
+    if (club_name !== undefined) {
+      const { data: existingClubs, error: checkError } = await supabase
+        .from('clubs')
+        .select('id, club_name')
+        .ilike('club_name', club_name)
+        .neq('id', id);
+
+      if (checkError) {
+        console.error('Error checking for duplicate club name:', checkError);
+      }
+
+      if (existingClubs && existingClubs.length > 0) {
+        return res.status(409).json({ 
+          error: 'Club name already exists',
+          message: 'A club with this name already exists. Please choose a different name.'
+        });
+      }
+    }
+
     const updateData = {};
     if (club_name !== undefined) updateData.club_name = club_name;
     if (category !== undefined) updateData.category = category;
@@ -577,11 +614,35 @@ app.post('/livestreams/cleanup-all', async (req, res) => {
   }
 });
 
+// Clean up past events (delete events whose date/time has passed)
+async function cleanupPastEvents() {
+  try {
+    const now = new Date().toISOString();
+    
+    const { data, error } = await supabase
+      .from('events')
+      .delete()
+      .lt('time', now)
+      .not('time', 'is', null)
+      .select();
+    
+    if (error) {
+      console.error('Error cleaning up past events:', error);
+    } else if (data && data.length > 0) {
+      console.log(`Cleaned up ${data.length} past event(s)`);
+    }
+  } catch (err) {
+    console.error('Error in cleanupPastEvents:', err);
+  }
+}
+
 // Run cleanup on server start
 cleanupOldStreams();
+cleanupPastEvents();
 
 // Run cleanup every hour
 setInterval(cleanupOldStreams, 60 * 60 * 1000);
+setInterval(cleanupPastEvents, 60 * 60 * 1000);
 
 // Start server
 const PORT = 4000;
