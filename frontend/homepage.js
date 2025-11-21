@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Hide videos, show events
             videoResults.style.display = 'none';
             eventsPage.style.display = 'block';
+            const schoolsPage = document.getElementById('schoolsPage');
+            if (schoolsPage) schoolsPage.style.display = 'none';
             if (createClubBtn) createClubBtn.style.display = 'none';
             if (createEventBtn) createEventBtn.style.display = isLoggedIn ? 'block' : 'none';
             if (eventsTitle) eventsTitle.style.display = 'block';
@@ -69,6 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
             videoResults.style.display = 'flex';
             videoResults.style.justifyContent = 'center';
             eventsPage.style.display = 'none';
+            const schoolsPage = document.getElementById('schoolsPage');
+            if (schoolsPage) schoolsPage.style.display = 'none';
             if (liveList) {
                 liveList.style.display = 'none';
                 liveList.style.visibility = 'hidden';
@@ -96,6 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
             videoResults.style.display = 'grid';
             videoResults.style.justifyContent = '';
             eventsPage.style.display = 'none';
+            const schoolsPage = document.getElementById('schoolsPage');
+            if (schoolsPage) schoolsPage.style.display = 'none';
             if (liveList) {
                 liveList.style.display = 'grid';
                 liveList.style.visibility = 'visible';
@@ -113,10 +119,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (createEventBtn) createEventBtn.style.display = 'none';
             if (eventsTitle) eventsTitle.style.display = 'none';
             if (filterButton) filterButton.style.display = 'block';
+        } else if (category === 'school') {
+            // Show schools page
+            videoResults.style.display = 'none';
+            eventsPage.style.display = 'none';
+            const schoolsPage = document.getElementById('schoolsPage');
+            if (schoolsPage) schoolsPage.style.display = 'block';
+            if (createClubBtn) createClubBtn.style.display = 'none';
+            if (createEventBtn) createEventBtn.style.display = 'none';
+            if (eventsTitle) eventsTitle.style.display = 'none';
+            if (filterButton) filterButton.style.display = 'none';
+            if (filterOptions) filterOptions.classList.remove('active');
         } else {
             // Show videos, hide events and create club button, hide filter
             videoResults.style.display = 'grid';
             eventsPage.style.display = 'none';
+            const schoolsPage = document.getElementById('schoolsPage');
+            if (schoolsPage) schoolsPage.style.display = 'none';
             if (liveList) liveList.style.display = 'none';
             if (clubsList) clubsList.style.display = 'none';
             if (createClubBtn) createClubBtn.style.display = 'none';
@@ -431,7 +450,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!list) return;
             list.innerHTML = '';
 
-            data.forEach(ev => renderEventCard(ev));
+            // Get current date/time
+            const now = new Date();
+
+            // Filter events to only include present and future events
+            const futureEvents = data.filter(ev => {
+                if (!ev.time) return true; // Include events without a time
+                
+                const eventDate = new Date(ev.time);
+                return eventDate >= now; // Only include if event is now or in the future
+            });
+
+            // Sort events by date (earliest first)
+            futureEvents.sort((a, b) => {
+                if (!a.time) return 1;
+                if (!b.time) return -1;
+                return new Date(a.time) - new Date(b.time);
+            });
+
+            futureEvents.forEach(ev => renderEventCard(ev));
         } catch (err) {
             console.error('Error fetching events from backend:', err.message || err);
         }
