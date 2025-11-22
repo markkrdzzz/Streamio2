@@ -102,19 +102,23 @@ document.addEventListener('DOMContentLoaded', () => {
             eventsPage.style.display = 'none';
             const schoolsPage = document.getElementById('schoolsPage');
             if (schoolsPage) schoolsPage.style.display = 'none';
+            
             if (liveList) {
                 liveList.style.display = 'grid';
                 liveList.style.visibility = 'visible';
                 liveList.style.position = 'relative';
                 liveList.style.opacity = '1';
-                loadLiveStreams(); // Reload live streams
+                loadLiveStreams(); // Reload live streams when switching to Live tab
             }
+            
             if (clubsList) {
                 clubsList.style.display = 'none';
                 clubsList.style.visibility = 'hidden';
                 clubsList.style.position = 'absolute';
                 clubsList.style.opacity = '0';
+                clubsList.innerHTML = ''; // Clear clubs list
             }
+            
             if (createClubBtn) createClubBtn.style.display = 'none';
             if (createEventBtn) createEventBtn.style.display = 'none';
             if (eventsTitle) eventsTitle.style.display = 'none';
