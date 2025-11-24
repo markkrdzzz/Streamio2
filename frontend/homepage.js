@@ -2,6 +2,54 @@
 // HOMEPAGE MAIN FUNCTIONALITY
 // ============================================
 
+// Global function to load clubs from database into filter dropdown
+async function loadClubsIntoFilter() {
+    try {
+        const response = await fetch('http://localhost:4000/clubs');
+        const clubs = await response.json();
+        
+        console.log('Loaded clubs:', clubs); // Debug log
+        
+        // Get the club dropdown button and menu
+        const clubButton = document.querySelector('[data-filter="location"]');
+        const clubMenu = clubButton ? clubButton.nextElementSibling : null;
+        
+        if (clubMenu) {
+            // Clear existing club options
+            clubMenu.innerHTML = '';
+            
+            // Add each club to the dropdown
+            clubs.forEach(club => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a class="dropdown-item" href="#">${club.club_name}</a>`;
+                clubMenu.appendChild(li);
+                
+                // Add click event to the dropdown item
+                const link = li.querySelector('.dropdown-item');
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const selectedValue = club.club_name;
+                    
+                    // Update button label
+                    clubButton.innerHTML = `Club: ${selectedValue} <span class="caret"></span>`;
+                    
+                    // Update filter state (this needs to match the filter system)
+                    // The filter system uses 'location' as the key
+                    if (window.activeDropdownFilters) {
+                        window.activeDropdownFilters.location = selectedValue;
+                    }
+                });
+            });
+            
+            console.log(`Added ${clubs.length} clubs to filter dropdown`);
+        } else {
+            console.error('Club dropdown menu not found');
+        }
+    } catch (error) {
+        console.error('Error loading clubs into filter:', error);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Get the references
     const options = document.querySelectorAll('.option-item');
@@ -53,7 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropdowns = {
             category: document.querySelector('[data-filter="category"]').nextElementSibling,
             school: document.querySelector('[data-filter="school"]').nextElementSibling,
-            club: document.querySelector('[data-filter="club"]').nextElementSibling
+            club: document.querySelector('[data-filter="location"]').nextElementSibling,
+            location: document.querySelector('[data-filter="location"]').nextElementSibling
         };
 
         const menu = dropdowns[type];
@@ -82,11 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadDynamicFilterOptions() {
         const savedCategories = JSON.parse(localStorage.getItem("dynamic_categories") || "[]");
         const savedSchools = JSON.parse(localStorage.getItem("dynamic_schools") || "[]");
-        const savedClubs = JSON.parse(localStorage.getItem("dynamic_clubs") || "[]");
 
         savedCategories.forEach(cat => addFilterOption("category", cat));
         savedSchools.forEach(s => addFilterOption("school", s));
-        savedClubs.forEach(c => addFilterOption("club", c));
+        
+        // Load clubs from database instead of localStorage
+        loadClubsIntoFilter();
     }
 
     // Shows the videos of the selected category OR shows events page
@@ -261,6 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
             filterOptions.classList.toggle('active');
         });
     }
+
+    // Load dynamic filter options (including clubs from database)
+    loadDynamicFilterOptions();
 });
 
 // ============================================
@@ -741,14 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         loadClubs();
                     }
 
-                    // Save new club to localStorage
-                    let clubs = JSON.parse(localStorage.getItem("dynamic_clubs") || "[]");
-                    clubs.push(clubName);
-                    localStorage.setItem("dynamic_clubs", JSON.stringify(clubs));
-
-                    // Add dynamically to dropdown menu
-                    addFilterOption("club", clubName);
-                    loadDynamicFilterOptions();
+                    // Reload clubs in filter dropdown from database
+                    loadClubsIntoFilter();
 
                     
                     alert('Club created successfully!');
