@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeDropdownFilters = {
         category: null,
         school: null,
-        location: null
+        club: null
     };
 
     function filterVideos(mainCategory, dropdownFilters) {
@@ -48,6 +48,46 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add cursor pointer style
         video.style.cursor = 'pointer';
     });
+
+        function addFilterOption(type, value) {
+        const dropdowns = {
+            category: document.querySelector('[data-filter="category"]').nextElementSibling,
+            school: document.querySelector('[data-filter="school"]').nextElementSibling,
+            club: document.querySelector('[data-filter="club"]').nextElementSibling
+        };
+
+        const menu = dropdowns[type];
+        if (!menu) return;
+
+        // avoid duplicates
+        const exists = Array.from(menu.querySelectorAll('.dropdown-item'))
+            .some(item => item.textContent.trim().toLowerCase() === value.trim().toLowerCase());
+
+        if (!exists) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a class="dropdown-item" href="#">${value}</a>`;
+            menu.appendChild(li);
+
+            // add click binding
+            li.querySelector('.dropdown-item').addEventListener('click', (e) => {
+                e.preventDefault();
+                const button = menu.previousElementSibling;
+                button.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)}: ${value} <span class="caret"></span>`;
+                activeDropdownFilters[type] = value;
+            });
+        }
+    }
+
+    // Load previously saved dynamic categories, schools, clubs
+    function loadDynamicFilterOptions() {
+        const savedCategories = JSON.parse(localStorage.getItem("dynamic_categories") || "[]");
+        const savedSchools = JSON.parse(localStorage.getItem("dynamic_schools") || "[]");
+        const savedClubs = JSON.parse(localStorage.getItem("dynamic_clubs") || "[]");
+
+        savedCategories.forEach(cat => addFilterOption("category", cat));
+        savedSchools.forEach(s => addFilterOption("school", s));
+        savedClubs.forEach(c => addFilterOption("club", c));
+    }
 
     // Shows the videos of the selected category OR shows events page
     function filterContent(category) {
@@ -614,6 +654,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!already) renderEventCard(created);
                 }
 
+                if (category && category.trim() !== "") {
+                    let categories = JSON.parse(localStorage.getItem("dynamic_categories") || "[]");
+                    if (!categories.includes(category)) {
+                        categories.push(category);
+                        localStorage.setItem("dynamic_categories", JSON.stringify(categories));
+                        addFilterOption("category", category);
+                        loadDynamicFilterOptions();
+                    }
+                }
+
                 // Reset form
                 form.reset();
             } catch (err) {
@@ -690,6 +740,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activeTab && activeTab.getAttribute('data-category') === 'clubs') {
                         loadClubs();
                     }
+
+                    // Save new club to localStorage
+                    let clubs = JSON.parse(localStorage.getItem("dynamic_clubs") || "[]");
+                    clubs.push(clubName);
+                    localStorage.setItem("dynamic_clubs", JSON.stringify(clubs));
+
+                    // Add dynamically to dropdown menu
+                    addFilterOption("club", clubName);
+                    loadDynamicFilterOptions();
+
                     
                     alert('Club created successfully!');
                 } catch (error) {

@@ -1023,28 +1023,89 @@ async function loadUserClubsForLiveStream() {
   }
 }
 
+
+async function loadSchoolsForLiveStream() {
+    try {
+        const savedSchools = JSON.parse(localStorage.getItem("dynamic_schools") || "[]");
+
+        const schoolSelect = document.getElementById('liveSchool');
+        if (!schoolSelect) {
+            console.error('liveSchool dropdown not found');
+            return;
+        }
+        schoolSelect.innerHTML = '<option value="">Select a school</option>';
+
+        const defaultSchools = ['UTRGV'];
+        const allSchools = [...new Set([...defaultSchools, ...savedSchools])];
+        
+        if (allSchools.length === 0) {
+            const noSchoolsOption = document.createElement('option');
+            noSchoolsOption.disabled = true;
+            noSchoolsOption.textContent = '-- No schools available --';
+            schoolSelect.appendChild(noSchoolsOption);
+        } else {
+            allSchools.forEach(school => {
+                const option = document.createElement('option');
+                option.value = school;
+                option.textContent = school;
+                schoolSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading schools for livestream:', error);
+    }
+}
+
+
 // Add category change handler to show/hide club dropdown
 document.addEventListener('DOMContentLoaded', () => {
   const categorySelect = document.getElementById('liveCategory');
   const clubContainer = document.getElementById('liveClubContainer');
   const clubSelect = document.getElementById('liveClub');
+  const schoolContainer = document.getElementById('liveSchoolContainer');
+  const schoolSelect = document.getElementById('liveSchool');
 
   if (categorySelect && clubContainer) {
     // Initially hide club dropdown
     clubContainer.style.display = 'none';
+    schoolContainer.style.display = 'none';
 
     // Listen for category changes
     categorySelect.addEventListener('change', () => {
+    const selectedCategory = categorySelect.value;
+
       if (categorySelect.value === 'Clubs') {
         // Show club dropdown and load clubs
         clubContainer.style.display = 'block';
         clubSelect.setAttribute('required', 'required');
         loadUserClubsForLiveStream();
-      } else {
+
+        // Hide school dropdown
+        schoolContainer.style.display = 'none';
+        schoolSelect.removeAttribute('required');
+        schoolSelect.value = '';
+
+      } else if (selectedCategory === 'School') {
+        // Show school dropdown and load schools
+        schoolContainer.style.display = 'block';
+        schoolSelect.setAttribute('required', 'required');
+        loadSchoolsForLiveStream();
+                
+        // Hide club dropdown
+        clubContainer.style.display = 'none';
+        clubSelect.removeAttribute('required');
+        clubSelect.value = '';
+
+      } 
+      else {
         // Hide club dropdown and remove required
         clubContainer.style.display = 'none';
         clubSelect.removeAttribute('required');
         clubSelect.value = ''; // Clear selection
+
+        schoolContainer.style.display = 'none';
+        schoolSelect.removeAttribute('required');
+        schoolSelect.value = '';
       }
     });
   }
