@@ -285,12 +285,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Filter Events Function ---
+    function filterEvents(dropdownFilters) {
+        const eventCards = document.querySelectorAll('.event-card');
+        
+        eventCards.forEach(card => {
+            const cardCategory = card.getAttribute('data-event-category');
+            const cardClub = card.getAttribute('data-event-club');
+            
+            const matchesCategory = !dropdownFilters.category || (cardCategory === dropdownFilters.category);
+            const matchesClub = !dropdownFilters.location || (cardClub === dropdownFilters.location);
+            
+            card.style.display = (matchesCategory && matchesClub) ? 'block' : 'none';
+        });
+    }
+
     // --- Save Changes ---
     if (saveChangesBtn) {
         saveChangesBtn.addEventListener('click', () => {
             const activeTab = document.querySelector('.option-item.active');
             const mainCategory = activeTab ? activeTab.getAttribute('data-category') : 'all';
+            
+            // Filter videos on live tab
             filterVideos(mainCategory, activeDropdownFilters);
+            
+            // Filter events on events tab
+            if (mainCategory === 'events') {
+                filterEvents(activeDropdownFilters);
+            }
+            
             if (filterOptions) filterOptions.classList.remove('active');
         });
     }
@@ -462,6 +485,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fetch club name asynchronously
             getClubName(ev.club_id).then(clubName => {
                 clubInfo.innerHTML = `<strong>Club:</strong> ${clubName}`;
+                // Add club name as data attribute for filtering
+                card.setAttribute('data-event-club', clubName);
             }).catch(() => {
                 clubInfo.innerHTML = `<strong>Club:</strong> Club #${ev.club_id}`;
             });
@@ -484,6 +509,11 @@ document.addEventListener('DOMContentLoaded', () => {
             catInfo.style.marginBottom = '8px';
             catInfo.innerHTML = `<strong>Category:</strong> ${ev.category}`;
             body.appendChild(catInfo);
+        }
+        
+        // Add category as data attribute for filtering
+        if (ev.category) {
+            card.setAttribute('data-event-category', ev.category);
         }
 
         // Description
@@ -929,10 +959,7 @@ async function loadClubs() {
             const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
             
             card.innerHTML = `
-                <div class="thumbnail-block" style="position: relative; background: ${randomGradient}; display: flex; align-items: center; justify-content: center;">
-                    <div style="text-align: center; color: rgba(255, 255, 255, 0.4); font-size: 14px; font-weight: 300; letter-spacing: 1px;">
-                        NO LOGO
-                    </div>
+                <div class="thumbnail-block" style="position: relative; background-image: url('./thumbnail/building.jpg'); background-size: cover; background-position: center;">
                 </div>
                 <div class="video-info">
                     <div style="flex: 1;">
