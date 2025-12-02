@@ -499,7 +499,17 @@
 
       socket.on('error', (message) => {
         console.error('Socket error:', message);
-        alert('Unable to connect to stream: ' + message);
+        // Don't alert immediately, might just be timing issue
+        if (message.includes('Room not found')) {
+          console.log('Waiting for broadcaster to start...');
+          // Retry after a delay
+          setTimeout(() => {
+            if (socket && socket.connected) {
+              console.log('Retrying connection to room:', roomName);
+              socket.emit('viewer', roomName);
+            }
+          }, 2000);
+        }
       });
     }
 

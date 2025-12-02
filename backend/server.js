@@ -674,7 +674,7 @@ io.on('connection', (socket) => {
 
   // Viewer joins a room
   socket.on('viewer', (roomId) => {
-    console.log('Viewer joined room:', roomId);
+    console.log('Viewer trying to join room:', roomId);
     const room = rooms.get(roomId);
     if (room) {
       room.viewers.add(socket.id);
@@ -682,10 +682,25 @@ io.on('connection', (socket) => {
       socket.roomId = roomId;
       socket.isBroadcaster = false;
       
+      console.log('Viewer joined room successfully:', roomId);
       // Notify broadcaster that a viewer joined
       socket.to(room.broadcaster).emit('viewer-joined', socket.id);
     } else {
-      socket.emit('error', 'Room not found');
+      console.log('Room not found:', roomId, 'Available rooms:', Array.from(rooms.keys()));
+      // Don't emit error immediately, viewer might have connected before broadcaster
+      // Instead, join anyway and wait for broadcaster
+      socket.join(roomId);
+      socket.roomId = roomId;
+      socket.isBroadcaster = false;
+      
+      // Check again after a delay
+      setTimeout(() => {
+        const roomCheck = rooms.get(roomId);
+        if (roomCheck) {
+          roomCheck.viewers.add(socket.id);
+          socket.to(roomCheck.broadcaster).emit('viewer-joined', socket.id);
+        }
+      }, 2000);
     }
   });
 
