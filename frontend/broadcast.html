@@ -600,23 +600,41 @@ async function init() {
       socket.on('viewer-joined', async (viewerId) => {
         console.log('New viewer joined:', viewerId);
         
+        // Verify local stream is available
+        if (!localStream) {
+          console.error('No local stream available when viewer joined!');
+          return;
+        }
+        
+        console.log('Local stream tracks:', localStream.getTracks().map(t => ({
+          kind: t.kind,
+          enabled: t.enabled,
+          readyState: t.readyState
+        })));
+
         // Create peer connection for this viewer
         const peerConnection = createPeerConnection(viewerId);
         peerConnections[viewerId] = peerConnection;
 
-        // Add local stream tracks to the connection
-        if (localStream) {
-          localStream.getTracks().forEach(track => {
-            console.log('Adding track to peer connection:', track.kind);
-            peerConnection.addTrack(track, localStream);
+        // Add local stream tracks to the connection FIRST
+        localStream.getTracks().forEach(track => {
+          console.log(`Adding ${track.kind} track to peer connection for viewer ${viewerId}`, {
+            enabled: track.enabled,
+            readyState: track.readyState
           });
-        } else {
-          console.error('No local stream available!');
-        }
+          const sender = peerConnection.addTrack(track, localStream);
+          console.log('Track added, sender:', sender);
+        });
+
+        // Wait a moment for tracks to be fully added
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Create and send offer to viewer
         try {
-          const offer = await peerConnection.createOffer();
+          const offer = await peerConnection.createOffer({
+            offerToReceiveAudio: false,
+            offerToReceiveVideo: false
+          });
           await peerConnection.setLocalDescription(offer);
           console.log('Sending offer to viewer:', viewerId);
           socket.emit('offer', { offer, to: viewerId });

@@ -299,6 +299,28 @@
         // Initialize WebRTC viewer connection with a slight delay to ensure broadcaster is ready
         setTimeout(() => {
           initializeWebRTC(roomName);
+          
+          // Add periodic check for video
+          setInterval(() => {
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (remoteVideo && remoteVideo.srcObject) {
+              const stream = remoteVideo.srcObject;
+              const tracks = stream.getTracks();
+              console.log('Video check:', {
+                hasStream: !!remoteVideo.srcObject,
+                trackCount: tracks.length,
+                tracks: tracks.map(t => ({
+                  kind: t.kind,
+                  enabled: t.enabled,
+                  readyState: t.readyState,
+                  muted: t.muted
+                })),
+                videoWidth: remoteVideo.videoWidth,
+                videoHeight: remoteVideo.videoHeight,
+                paused: remoteVideo.paused
+              });
+            }
+          }, 5000); // Check every 5 seconds
         }, 1000);
 
         addChatMessage('System', `Welcome to ${stream.users?.username || 'Unknown'}'s stream!`, true);
@@ -517,7 +539,8 @@
       const config = {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' }
         ]
       };
 
@@ -534,25 +557,65 @@
         }
       };
 
-      // Handle incoming stream
+      // Handle incoming stream - THIS IS CRITICAL
       pc.ontrack = (event) => {
-        console.log('Received remote track:', event.track.kind);
+        console.log('🎉 Received remote track:', event.track.kind, {
+          enabled: event.track.enabled,
+          readyState: event.track.readyState,
+          muted: event.track.muted
+        });
+        
         const remoteVideo = document.getElementById('remoteVideo');
-        if (remoteVideo && event.streams[0]) {
-          remoteVideo.srcObject = event.streams[0];
-          console.log('Video stream connected to video element');
+        if (remoteVideo) {
+          // Set the stream from the event
+          if (!remoteVideo.srcObject) {
+            remoteVideo.srcObject = event.streams[0];
+            console.log('✅ Video stream connected to video element');
+          } else {
+            // If srcObject already exists, just add the track
+            const stream = remoteVideo.srcObject;
+            if (!stream.getTracks().find(t => t.id === event.track.id)) {
+              // Track not already in stream
+              console.log('Adding additional track to existing stream');
+            }
+          }
+          
           // Ensure video plays
-          remoteVideo.play().catch(e => console.error('Error playing video:', e));
+          remoteVideo.play()
+            .then(() => console.log('✅ Video playing'))
+            .catch(e => console.error('❌ Error playing video:', e));
+            
+          // Log video element state
+          console.log('Video element state:', {
+            paused: remoteVideo.paused,
+            videoWidth: remoteVideo.videoWidth,
+            videoHeight: remoteVideo.videoHeight,
+            readyState: remoteVideo.readyState
+          });
+        } else {
+          console.error('❌ Remote video element not found!');
         }
       };
 
       pc.onconnectionstatechange = () => {
         console.log('Connection state:', pc.connectionState);
         if (pc.connectionState === 'connected') {
-          console.log('WebRTC connection established successfully!');
+          console.log('✅ WebRTC connection established successfully!');
+          
+          // Check what tracks we're receiving
+          const receivers = pc.getReceivers();
+          console.log('Active receivers:', receivers.map(r => ({
+            kind: r.track.kind,
+            enabled: r.track.enabled,
+            readyState: r.track.readyState
+          })));
         } else if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-          console.log('Connection failed or disconnected');
+          console.log('❌ Connection failed or disconnected');
         }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', pc.iceConnectionState);
       };
 
       return pc;
