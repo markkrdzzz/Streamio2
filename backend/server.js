@@ -2,8 +2,18 @@ import express from "express";
 import { createClient } from '@supabase/supabase-js';
 import bcrypt from "bcrypt";
 import cors from "cors";
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
+
 app.use(cors());
 app.use(express.json());
 
@@ -644,6 +654,88 @@ cleanupPastEvents();
 setInterval(cleanupOldStreams, 60 * 60 * 1000);
 setInterval(cleanupPastEvents, 60 * 60 * 1000);
 
+// ============================================
+// SOCKET.IO FOR WEBRTC SIGNALING
+// ============================================
+
+const rooms = new Map(); // Store room information
+
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  // Broadcaster joins and creates a room
+  socket.on('broadcaster', (roomId) => {
+    console.log('Broadcaster joined room:', roomId);
+    rooms.set(roomId, { broadcaster: socket.id, viewers: new Set() });
+    socket.join(roomId);
+    socket.roomId = roomId;
+    socket.isBroadcaster = true;
+  });
+
+  // Viewer joins a room
+  socket.on('viewer', (roomId) => {
+    console.log('Viewer joined room:', roomId);
+    const room = rooms.get(roomId);
+    if (room) {
+      room.viewers.add(socket.id);
+      socket.join(roomId);
+      socket.roomId = roomId;
+      socket.isBroadcaster = false;
+      
+      // Notify broadcaster that a viewer joined
+      socket.to(room.broadcaster).emit('viewer-joined', socket.id);
+    } else {
+      socket.emit('error', 'Room not found');
+    }
+  });
+
+  // Forward WebRTC offer from broadcaster to specific viewer
+  socket.on('offer', (data) => {
+    console.log('Offer sent from broadcaster to viewer:', data.to);
+    socket.to(data.to).emit('offer', {
+      offer: data.offer,
+      from: socket.id
+    });
+  });
+
+  // Forward WebRTC answer from viewer to broadcaster
+  socket.on('answer', (data) => {
+    console.log('Answer sent from viewer to broadcaster');
+    socket.to(data.to).emit('answer', {
+      answer: data.answer,
+      from: socket.id
+    });
+  });
+
+  // Forward ICE candidates
+  socket.on('ice-candidate', (data) => {
+    socket.to(data.to).emit('ice-candidate', {
+      candidate: data.candidate,
+      from: socket.id
+    });
+  });
+
+  // Handle disconnect
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+    
+    if (socket.roomId) {
+      const room = rooms.get(socket.roomId);
+      if (room) {
+        if (socket.isBroadcaster) {
+          // Broadcaster left, notify all viewers
+          io.to(socket.roomId).emit('broadcaster-left');
+          rooms.delete(socket.roomId);
+        } else {
+          // Viewer left
+          room.viewers.delete(socket.id);
+          socket.to(room.broadcaster).emit('viewer-left', socket.id);
+        }
+      }
+    }
+  });
+});
+
 // Start server
 const PORT = 4000;
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+httpServer.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
