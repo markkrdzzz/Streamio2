@@ -333,6 +333,19 @@ async function init() {
         addChatMessage('System', 'Reconnected to your stream! 🎉', true);
         
         console.log('Reconnected to existing stream:', streamId);
+        
+        // Initialize WebRTC for the existing stream
+        if (existingStream.room_name) {
+          console.log('Initializing WebRTC for reconnected stream with room:', existingStream.room_name);
+          // Wait for local stream to be ready
+          const waitForStream = setInterval(() => {
+            if (localStream && localStream.active) {
+              clearInterval(waitForStream);
+              console.log('Local stream ready, starting WebRTC');
+              initializeWebRTC(existingStream.room_name);
+            }
+          }, 100);
+        }
       }
     }
   } catch (error) {
