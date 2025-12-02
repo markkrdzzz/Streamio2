@@ -260,6 +260,10 @@
 
         const stream = await response.json();
         console.log('Stream data received:', stream);
+        console.log('Stream ID from URL:', streamId);
+        console.log('Stream ID from DB:', stream.id);
+        console.log('Stream room_name:', stream.room_name);
+        console.log('Stream is_live:', stream.is_live);
 
         // Update page with stream data
         document.getElementById('streamTitle').textContent = stream.title;

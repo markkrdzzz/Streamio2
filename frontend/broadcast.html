@@ -291,65 +291,24 @@ async function init() {
   document.getElementById('streamTitle').textContent = streamData.title || 'Untitled Stream';
   document.getElementById('streamDescription').textContent = streamData.description || '';
 
-  // Check if returning to an existing stream
+  // Clean up any old streams from this user instead of reconnecting
   const userId = user.id || user.user_id;
   try {
     const response = await fetch(`${API_URL}/livestreams?user_id=${userId}`);
     if (response.ok) {
       const streams = await response.json();
-      const existingStream = streams.find(s => s.user_id === userId);
+      const existingStreams = streams.filter(s => s.user_id === userId);
       
-      if (existingStream) {
-        // User has an active stream - reconnect to it
-        streamId = existingStream.id;
-        isLive = true;
-        
-        // Calculate how long stream has been running
-        if (existingStream.created_at) {
-          startTime = new Date(existingStream.created_at).getTime();
-          durationInterval = setInterval(updateDuration, 1000);
-          updateDuration(); // Update immediately
-        }
-        
-        // Update UI to show live state
-        document.getElementById('streamStatus').textContent = '🔴 LIVE';
-        document.getElementById('streamStatus').className = 'status-indicator status-live';
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('stopBtn').disabled = false;
-        document.getElementById('chatInput').disabled = false;
-        document.getElementById('sendChatBtn').disabled = false;
-        
-        // Update stream info
-        document.getElementById('streamTitle').textContent = existingStream.title;
-        document.getElementById('streamDescription').textContent = existingStream.description || '';
-        
-        const username = user.username || user.name || 'User';
-        document.getElementById('navbarTitle').textContent = `${username}'s Live`;
-        
-        const streamLink = `${window.location.origin}/live.html?stream=${streamId}`;
-        document.getElementById('streamLink').href = streamLink;
-        document.getElementById('streamLink').textContent = streamLink;
-        
-        addChatMessage('System', 'Reconnected to your stream! 🎉', true);
-        
-        console.log('Reconnected to existing stream:', streamId);
-        
-        // Initialize WebRTC for the existing stream
-        if (existingStream.room_name) {
-          console.log('Initializing WebRTC for reconnected stream with room:', existingStream.room_name);
-          // Wait for local stream to be ready
-          const waitForStream = setInterval(() => {
-            if (localStream && localStream.active) {
-              clearInterval(waitForStream);
-              console.log('Local stream ready, starting WebRTC');
-              initializeWebRTC(existingStream.room_name);
-            }
-          }, 100);
+      if (existingStreams.length > 0) {
+        console.log('Found', existingStreams.length, 'old streams. Cleaning up...');
+        for (const oldStream of existingStreams) {
+          console.log('Ending old stream:', oldStream.id);
+          await fetch(`${API_URL}/livestreams/${oldStream.id}`, { method: 'DELETE' });
         }
       }
     }
   } catch (error) {
-    console.error('Error checking for existing stream:', error);
+    console.error('Error cleaning up old streams:', error);
   }
 
   // Request camera and mic access
@@ -374,8 +333,26 @@ async function init() {
       }
 
       try {
+        const userId = user.id || user.user_id;
+        
+        // First, end any existing streams by this user
+        try {
+          const existingResponse = await fetch(`${API_URL}/livestreams?user_id=${userId}`);
+          if (existingResponse.ok) {
+            const existingStreams = await existingResponse.json();
+            for (const oldStream of existingStreams) {
+              if (oldStream.user_id === userId) {
+                console.log('Ending old stream:', oldStream.id);
+                await fetch(`${API_URL}/livestreams/${oldStream.id}`, { method: 'DELETE' });
+              }
+            }
+          }
+        } catch (cleanupError) {
+          console.error('Error cleaning up old streams:', cleanupError);
+        }
+        
         // Generate unique room name
-        const uniqueRoomName = `room_${user.id || user.user_id}_${Date.now()}`;
+        const uniqueRoomName = `room_${userId}_${Date.now()}`;
         
         // Create livestream in database
         const response = await fetch(`${API_URL}/livestreams`, {
