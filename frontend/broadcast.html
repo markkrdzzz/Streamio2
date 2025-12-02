@@ -645,30 +645,40 @@ async function init() {
 
       // Handle answer from viewer
       socket.on('answer', async (data) => {
-        console.log('Received answer from viewer:', data.from);
+        console.log('📥 Received answer from viewer:', data.from);
         const peerConnection = peerConnections[data.from];
         if (peerConnection) {
           try {
-            await peerConnection.setRemoteDescription(data.answer);
-            console.log('Remote description set for viewer:', data.from);
+            const answerDesc = new RTCSessionDescription(data.answer);
+            await peerConnection.setRemoteDescription(answerDesc);
+            console.log('✅ Remote description set for viewer:', data.from);
+            console.log('Connection state:', peerConnection.connectionState);
+            console.log('ICE connection state:', peerConnection.iceConnectionState);
           } catch (error) {
-            console.error('Error setting remote description:', error);
+            console.error('❌ Error setting remote description:', error);
+            console.error('Error details:', error.message);
           }
         } else {
-          console.error('No peer connection found for viewer:', data.from);
+          console.error('❌ No peer connection found for viewer:', data.from);
+          console.log('Available connections:', Object.keys(peerConnections));
         }
       });
 
       // Handle ICE candidates
       socket.on('ice-candidate', async (data) => {
-        console.log('Received ICE candidate from viewer:', data.from);
+        console.log('🧊 Received ICE candidate from viewer:', data.from);
         const peerConnection = peerConnections[data.from];
         if (peerConnection && data.candidate) {
           try {
-            await peerConnection.addIceCandidate(data.candidate);
-            console.log('ICE candidate added');
+            const candidate = new RTCIceCandidate(data.candidate);
+            await peerConnection.addIceCandidate(candidate);
+            console.log('✅ ICE candidate added for viewer:', data.from);
           } catch (error) {
-            console.error('Error adding ICE candidate:', error);
+            console.error('❌ Error adding ICE candidate:', error);
+          }
+        } else {
+          if (!peerConnection) {
+            console.error('❌ No peer connection for viewer:', data.from);
           }
         }
       });
@@ -684,10 +694,12 @@ async function init() {
     }
 
     function createPeerConnection(viewerId) {
+      console.log('🔧 Creating peer connection for viewer:', viewerId);
       const config = {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' }
         ]
       };
 
@@ -695,16 +707,32 @@ async function init() {
 
       // Handle ICE candidates
       peerConnection.onicecandidate = (event) => {
-        if (event.candidate && socket) {
-          socket.emit('ice-candidate', {
-            candidate: event.candidate,
-            to: viewerId
-          });
+        if (event.candidate) {
+          console.log('🧊 Sending ICE candidate to viewer:', viewerId);
+          if (socket) {
+            socket.emit('ice-candidate', {
+              candidate: event.candidate,
+              to: viewerId
+            });
+          } else {
+            console.error('❌ Socket not available to send ICE candidate');
+          }
+        } else {
+          console.log('✅ ICE gathering completed for viewer:', viewerId);
         }
       };
 
+      peerConnection.oniceconnectionstatechange = () => {
+        console.log(`ICE connection state for ${viewerId}:`, peerConnection.iceConnectionState);
+      };
+
       peerConnection.onconnectionstatechange = () => {
-        console.log('Connection state:', peerConnection.connectionState);
+        console.log(`Connection state for ${viewerId}:`, peerConnection.connectionState);
+        if (peerConnection.connectionState === 'connected') {
+          console.log('✅✅✅ Successfully connected to viewer:', viewerId);
+        } else if (peerConnection.connectionState === 'failed') {
+          console.error('❌❌❌ Connection failed for viewer:', viewerId);
+        }
       };
 
       return peerConnection;

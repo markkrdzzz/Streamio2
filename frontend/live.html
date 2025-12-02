@@ -482,32 +482,53 @@
 
       // Receive offer from broadcaster
       socket.on('offer', async (data) => {
-        console.log('Received offer from broadcaster:', data.from);
+        console.log('📥 Received offer from broadcaster:', data.from);
+        console.log('Offer type:', data.offer.type);
+        console.log('Offer SDP length:', data.offer.sdp?.length);
         
         // Create peer connection if not exists
         if (!peerConnection) {
+          console.log('Creating new peer connection for broadcaster:', data.from);
           peerConnection = createPeerConnection(data.from);
         }
 
         try {
-          await peerConnection.setRemoteDescription(data.offer);
-          console.log('Remote description set');
+          // Ensure offer is a proper RTCSessionDescription
+          const offerDesc = new RTCSessionDescription(data.offer);
+          console.log('Setting remote description...');
+          await peerConnection.setRemoteDescription(offerDesc);
+          console.log('✅ Remote description set successfully');
+          
+          console.log('Creating answer...');
           const answer = await peerConnection.createAnswer();
+          console.log('Answer created, setting local description...');
           await peerConnection.setLocalDescription(answer);
-          console.log('Sending answer to broadcaster');
+          console.log('✅ Local description set');
+          
+          console.log('📤 Sending answer to broadcaster:', data.from);
           socket.emit('answer', { answer, to: data.from });
+          
+          console.log('WebRTC negotiation complete on viewer side');
         } catch (error) {
-          console.error('Error handling offer:', error);
+          console.error('❌ Error handling offer:', error);
+          console.error('Error details:', error.message, error.stack);
         }
       });
 
       // Handle ICE candidates
       socket.on('ice-candidate', async (data) => {
+        console.log('🧊 Received ICE candidate from:', data.from);
         if (peerConnection && data.candidate) {
           try {
-            await peerConnection.addIceCandidate(data.candidate);
+            const candidate = new RTCIceCandidate(data.candidate);
+            await peerConnection.addIceCandidate(candidate);
+            console.log('✅ ICE candidate added successfully');
           } catch (error) {
-            console.error('Error adding ICE candidate:', error);
+            console.error('❌ Error adding ICE candidate:', error);
+          }
+        } else {
+          if (!peerConnection) {
+            console.warn('⚠️ No peer connection to add ICE candidate to');
           }
         }
       });
