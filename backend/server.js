@@ -682,9 +682,10 @@ io.on('connection', (socket) => {
       socket.roomId = roomId;
       socket.isBroadcaster = false;
       
-      console.log('Viewer joined room successfully:', roomId);
+      console.log('Viewer joined room successfully:', roomId, 'Notifying broadcaster:', room.broadcaster);
       // Notify broadcaster that a viewer joined
       socket.to(room.broadcaster).emit('viewer-joined', socket.id);
+      console.log('Viewer-joined event sent to broadcaster');
     } else {
       console.log('Room not found:', roomId, 'Available rooms:', Array.from(rooms.keys()));
       // Don't emit error immediately, viewer might have connected before broadcaster
@@ -698,6 +699,7 @@ io.on('connection', (socket) => {
         const roomCheck = rooms.get(roomId);
         if (roomCheck) {
           roomCheck.viewers.add(socket.id);
+          console.log('Late join - notifying broadcaster:', roomCheck.broadcaster);
           socket.to(roomCheck.broadcaster).emit('viewer-joined', socket.id);
         }
       }, 2000);
