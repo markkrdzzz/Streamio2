@@ -407,8 +407,11 @@ async function init() {
         // Add system message to chat
         addChatMessage('System', 'You are now live! 🎉', true);
 
-        // Initialize WebRTC broadcasting
-        initializeWebRTC(uniqueRoomName);
+        // Wait a moment before initializing WebRTC to ensure everything is ready
+        setTimeout(() => {
+          console.log('Local stream tracks:', localStream.getTracks().map(t => t.kind));
+          initializeWebRTC(uniqueRoomName);
+        }, 500);
 
         alert('You are now live! Share your link with viewers.');
 

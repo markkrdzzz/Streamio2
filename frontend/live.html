@@ -296,8 +296,10 @@
         // Store room name for WebRTC connection
         roomName = stream.room_name;
         
-        // Initialize WebRTC viewer connection
-        initializeWebRTC(roomName);
+        // Initialize WebRTC viewer connection with a slight delay to ensure broadcaster is ready
+        setTimeout(() => {
+          initializeWebRTC(roomName);
+        }, 1000);
 
         addChatMessage('System', `Welcome to ${stream.users?.username || 'Unknown'}'s stream!`, true);
 
