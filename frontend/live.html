@@ -271,9 +271,17 @@
 
         // Calculate stream duration
         if (stream.created_at) {
-          startTime = new Date(stream.created_at).getTime();
-          durationInterval = setInterval(updateDuration, 1000);
-          updateDuration(); // Update immediately
+          // Parse the timestamp correctly - handle both ISO strings and timestamps
+          const createdDate = new Date(stream.created_at);
+          console.log('Stream created_at:', stream.created_at);
+          console.log('Parsed date:', createdDate);
+          console.log('Current time:', new Date());
+          
+          if (!isNaN(createdDate.getTime())) {
+            startTime = createdDate.getTime();
+            durationInterval = setInterval(updateDuration, 1000);
+            updateDuration(); // Update immediately
+          }
         }
 
         // Update video container with stream placeholder
@@ -313,8 +321,10 @@
     function updateDuration() {
       if (!startTime) return;
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-      const seconds = (elapsed % 60).toString().padStart(2, '0');
+      // Prevent negative values
+      const actualElapsed = Math.max(0, elapsed);
+      const minutes = Math.floor(actualElapsed / 60).toString().padStart(2, '0');
+      const seconds = (actualElapsed % 60).toString().padStart(2, '0');
       document.getElementById('streamDuration').textContent = `${minutes}:${seconds}`;
     }
 
@@ -430,28 +440,37 @@
         return;
       }
 
+      console.log('Initializing WebRTC for room:', roomName);
+
       // Connect to Socket.io server
       socket = io(API_URL);
 
       socket.on('connect', () => {
-        console.log('Connected to signaling server');
+        console.log('Connected to signaling server, socket ID:', socket.id);
         // Register as viewer
         socket.emit('viewer', roomName);
+        console.log('Registered as viewer for room:', roomName);
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
       });
 
       // Receive offer from broadcaster
       socket.on('offer', async (data) => {
-        console.log('Received offer from broadcaster');
+        console.log('Received offer from broadcaster:', data.from);
         
         // Create peer connection if not exists
         if (!peerConnection) {
-          peerConnection = createPeerConnection();
+          peerConnection = createPeerConnection(data.from);
         }
 
         try {
           await peerConnection.setRemoteDescription(data.offer);
+          console.log('Remote description set');
           const answer = await peerConnection.createAnswer();
           await peerConnection.setLocalDescription(answer);
+          console.log('Sending answer to broadcaster');
           socket.emit('answer', { answer, to: data.from });
         } catch (error) {
           console.error('Error handling offer:', error);
@@ -482,7 +501,7 @@
       });
     }
 
-    function createPeerConnection() {
+    function createPeerConnection(broadcasterId) {
       const config = {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -495,26 +514,31 @@
       // Handle ICE candidates
       pc.onicecandidate = (event) => {
         if (event.candidate && socket) {
+          console.log('Sending ICE candidate to broadcaster');
           socket.emit('ice-candidate', {
             candidate: event.candidate,
-            to: socket.id
+            to: broadcasterId
           });
         }
       };
 
       // Handle incoming stream
       pc.ontrack = (event) => {
-        console.log('Received remote track');
+        console.log('Received remote track:', event.track.kind);
         const remoteVideo = document.getElementById('remoteVideo');
         if (remoteVideo && event.streams[0]) {
           remoteVideo.srcObject = event.streams[0];
-          console.log('Video stream connected');
+          console.log('Video stream connected to video element');
+          // Ensure video plays
+          remoteVideo.play().catch(e => console.error('Error playing video:', e));
         }
       };
 
       pc.onconnectionstatechange = () => {
         console.log('Connection state:', pc.connectionState);
-        if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+        if (pc.connectionState === 'connected') {
+          console.log('WebRTC connection established successfully!');
+        } else if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
           console.log('Connection failed or disconnected');
         }
       };

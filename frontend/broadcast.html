@@ -577,13 +577,20 @@ async function init() {
     // ============================================
 
     function initializeWebRTC(roomName) {
+      console.log('Initializing WebRTC broadcasting for room:', roomName);
+      
       // Connect to Socket.io server
       socket = io(API_URL);
 
       socket.on('connect', () => {
-        console.log('Connected to signaling server');
+        console.log('Connected to signaling server, socket ID:', socket.id);
         // Register as broadcaster
         socket.emit('broadcaster', roomName);
+        console.log('Registered as broadcaster for room:', roomName);
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
       });
 
       // Handle new viewer joining
@@ -597,14 +604,18 @@ async function init() {
         // Add local stream tracks to the connection
         if (localStream) {
           localStream.getTracks().forEach(track => {
+            console.log('Adding track to peer connection:', track.kind);
             peerConnection.addTrack(track, localStream);
           });
+        } else {
+          console.error('No local stream available!');
         }
 
         // Create and send offer to viewer
         try {
           const offer = await peerConnection.createOffer();
           await peerConnection.setLocalDescription(offer);
+          console.log('Sending offer to viewer:', viewerId);
           socket.emit('offer', { offer, to: viewerId });
         } catch (error) {
           console.error('Error creating offer:', error);
@@ -618,18 +629,23 @@ async function init() {
         if (peerConnection) {
           try {
             await peerConnection.setRemoteDescription(data.answer);
+            console.log('Remote description set for viewer:', data.from);
           } catch (error) {
             console.error('Error setting remote description:', error);
           }
+        } else {
+          console.error('No peer connection found for viewer:', data.from);
         }
       });
 
       // Handle ICE candidates
       socket.on('ice-candidate', async (data) => {
+        console.log('Received ICE candidate from viewer:', data.from);
         const peerConnection = peerConnections[data.from];
         if (peerConnection && data.candidate) {
           try {
             await peerConnection.addIceCandidate(data.candidate);
+            console.log('ICE candidate added');
           } catch (error) {
             console.error('Error adding ICE candidate:', error);
           }
