@@ -874,7 +874,14 @@ async function loadLiveStreams() {
             const card = document.createElement('div');
             card.className = 'video-placeholder';
             card.style.cursor = 'pointer';
-            card.onclick = () => window.location.href = `live.html?stream=${stream.id}`;
+            // Navigate to the specific user's live stream page
+            card.onclick = () => {
+                if (stream.users?.username) {
+                    window.location.href = `live.html?stream=${stream.id}&user=${stream.users.username}`;
+                } else {
+                    window.location.href = `live.html?stream=${stream.id}`;
+                }
+            };
             
             card.innerHTML = `
                 <div class="thumbnail-block" style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">

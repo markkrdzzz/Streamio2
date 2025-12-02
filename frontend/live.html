@@ -351,13 +351,40 @@
           profileImg.src = stream.users.profile_picture;
         }
 
-        // Note: In a real implementation, you would connect to the actual video stream here
-        // For now, the YouTube embed remains as a placeholder
+        // Update profile link
+        const profileLinks = document.querySelectorAll('.stream-info a[href="profile.html"]');
+        profileLinks.forEach(link => {
+          if (stream.users?.username) {
+            link.href = `profile.html?user=${stream.users.username}`;
+          }
+        });
+
+        // Replace YouTube video with actual stream placeholder
+        const videoContainer = document.querySelector('.live-video iframe');
+        if (videoContainer) {
+          const parent = videoContainer.parentElement;
+          parent.innerHTML = `
+            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+              <div style="text-align: center; padding: 40px;">
+                <div style="font-size: 80px; margin-bottom: 20px;">🔴</div>
+                <h2 style="margin: 0 0 10px 0; font-size: 32px;">${stream.title}</h2>
+                <p style="font-size: 20px; margin: 10px 0; opacity: 0.9;">Streaming by ${stream.users?.username || 'Unknown'}</p>
+                <p style="font-size: 16px; margin: 20px 0; opacity: 0.8;">${stream.description || 'Live now!'}</p>
+                <div style="margin-top: 30px; padding: 15px 30px; background: rgba(255,255,255,0.2); border-radius: 10px; display: inline-block;">
+                  <span style="font-size: 18px; font-weight: bold;">👁️ ${stream.viewer_count || 0} viewers</span>
+                </div>
+                <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">Video streaming coming soon...</p>
+              </div>
+            </div>
+          `;
+        }
+
         console.log('Livestream loaded:', stream);
 
       } catch (error) {
         console.error('Error loading livestream:', error);
         alert('This stream is no longer available.');
+        window.location.href = 'homepage.html';
       }
     }
 
