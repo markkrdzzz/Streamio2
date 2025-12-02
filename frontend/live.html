@@ -478,6 +478,14 @@
         // Register as viewer
         socket.emit('viewer', roomName);
         console.log('Registered as viewer for room:', roomName);
+        
+        // If no offer received within 3 seconds, request it
+        setTimeout(() => {
+          if (!peerConnection) {
+            console.log('⚠️ No offer received yet, requesting offer from broadcaster');
+            socket.emit('request-offer', roomName);
+          }
+        }, 3000);
       });
 
       socket.on('connect_error', (error) => {

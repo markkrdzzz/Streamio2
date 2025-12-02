@@ -684,7 +684,7 @@ io.on('connection', (socket) => {
       
       console.log('Viewer joined room successfully:', roomId, 'Notifying broadcaster:', room.broadcaster);
       // Notify broadcaster that a viewer joined
-      socket.to(room.broadcaster).emit('viewer-joined', socket.id);
+      io.to(room.broadcaster).emit('viewer-joined', socket.id);
       console.log('Viewer-joined event sent to broadcaster');
     } else {
       console.log('Room not found:', roomId, 'Available rooms:', Array.from(rooms.keys()));
@@ -700,9 +700,19 @@ io.on('connection', (socket) => {
         if (roomCheck) {
           roomCheck.viewers.add(socket.id);
           console.log('Late join - notifying broadcaster:', roomCheck.broadcaster);
-          socket.to(roomCheck.broadcaster).emit('viewer-joined', socket.id);
+          io.to(roomCheck.broadcaster).emit('viewer-joined', socket.id);
         }
       }, 2000);
+    }
+  });
+
+  // Viewer requests offer if not received
+  socket.on('request-offer', (roomId) => {
+    console.log('Viewer requesting offer for room:', roomId);
+    const room = rooms.get(roomId);
+    if (room && room.broadcaster) {
+      console.log('Sending manual viewer-joined to broadcaster:', room.broadcaster);
+      io.to(room.broadcaster).emit('viewer-joined', socket.id);
     }
   });
 
